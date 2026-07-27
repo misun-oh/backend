@@ -6,7 +6,7 @@
 import java.util.Scanner;
 
 public class MyApp {
-    
+
     // 속성 = 필드
     // 타입 변수명 = 값
     
