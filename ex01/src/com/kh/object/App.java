@@ -2,8 +2,11 @@ package com.kh.object;
 
 import com.kh.object.practice.StaticSample;
 
+import ex03.method.MenuApp;
+
 public class App {
     public static void main(String[] args) {
+        
         // 타입 변수명 = new 타입();
         // 기본 생성자를 호출하여 객체를 생성합니다. = 인스턴스
         StaticSample ss = new StaticSample();
