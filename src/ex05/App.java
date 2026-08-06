@@ -1,17 +1,24 @@
 package ex05;
 
 
+
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import ex05.dto.DeptDTO;
+import ex05.dto.EmpDTO;
 
 public class App {
 
     // 접속정보 필드로 정의 -> git에 노출 될 위험이 있다 -> 프로퍼티 파일로 옮겨서 관리
     private static final String URL =
-            "jdbc:mysql://43.201.71.21:3306/HR?serverTimezone=Asia/Seoul&characterEncoding=UTF-8";
+            "jdbc:mysql://43.201.71.210:3306/HR?serverTimezone=Asia/Seoul&characterEncoding=UTF-8";
     private static final String USER = "root";
     private static final String PASSWORD = "1234";
 
@@ -34,17 +41,31 @@ public class App {
             ResultSet rs =stmt.executeQuery("SELECT * FROM EMP");
             
             // 3. 결과집합으로 부터 데이터를 꺼내오기
-            rs.next();
-            // 컬럼이름, 순서
-            String empId = rs.getString("EMP_ID");
-            String empName = rs.getString(2);
-            String salary = rs.getString("SALARY");
+            // 리스트 생성
+            List<EmpDTO> list = new ArrayList<>();
+            // 반복문을 이용해서 여러사원의 정보를 읽어 올수 있도록 처리
+            while (rs.next()) {
+                // 컬럼이름, 순서
+                // getString : 데이터를 문자열로 반환
+                // getInt : 데이터를 숫자로 반환
+                String empId = rs.getString("EMP_ID");
+                String empName = rs.getString(2);
+                int salary = rs.getInt("SALARY");
+    
+                EmpDTO emp = new EmpDTO(empId, empName, salary);
+                // 리스트에 데이터를 추가
+                list.add(emp);
+                //System.out.println("%s %s %s".formatted(empId, empName, salary));
+                
+            }
 
-            System.out.println(empId);
-            System.out.println(empName);
-            System.out.println(salary);
+            // 리스트에 들어 있는 요소의 갯수
+            System.out.println(list.size());
+            System.out.println(list);
 
+        
 
+            
         } catch (ClassNotFoundException e) {
             System.out.println("mysql jdbc 라이브러리를 확인해주세요");
             e.printStackTrace();
