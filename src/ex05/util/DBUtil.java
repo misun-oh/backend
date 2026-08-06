@@ -13,7 +13,7 @@ public class DBUtil {
     private static final String URL =
             "jdbc:mysql://43.201.71.210:3306/HR?serverTimezone=Asia/Seoul&characterEncoding=UTF-8";
     private static final String USER = "root";
-    private static final String PASSWORD = "123"; // 본인 MySQL 비밀번호로 수정
+    private static final String PASSWORD = "1234"; // 본인 MySQL 비밀번호로 수정
 
     // 클래스가 처음 로딩될 때 딱 한 번만 드라이버를 등록한다
     static {
