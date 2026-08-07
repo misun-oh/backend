@@ -54,6 +54,24 @@ public class HRApp {
                 String name = InputUtil.getString("사원명 : ");
                 // 한명의 사원 정보를 반환
                 EmpDTO empDto = empDao.find(name);
+                // null 아니면 사원정보를 출력
+                if(empDto != null){
+                    System.out.println(empDto);
+
+                    String ent_yn = InputUtil.getString("퇴사 처리 하시겠습니까?(Y/N)");
+                    if("y".equalsIgnoreCase(ent_yn)){
+                        // 퇴사 처리 - 사번을 이용해서 퇴사 처리
+                        int res = empDao.updateEntYn(empDto.getEmpId());
+                        // 1개 이상의 행이 영향을 받음.
+                        if(res > 0 ){
+                            System.out.println("퇴사 처리 되었습니다.");
+                        }
+
+                    }
+
+                } else {
+                    System.out.println("%s님은 존재하지 않습니다.".formatted(name));
+                }
 
             }
             

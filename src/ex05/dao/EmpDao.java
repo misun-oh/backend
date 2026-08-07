@@ -56,4 +56,62 @@ public class EmpDao {
         return list;
     }
 
+    // 사원조회 - 사원반환, 사원이 없으면 - null
+    public EmpDTO find(String name) {
+        EmpDTO emp = null;
+        // ;은 삭제해야 합니다!
+        String sql = "SELECT * FROM EMP WHERE EMP_NAME = '%s'".formatted(name);
+        try (
+            // 1. connection 연결
+            Connection con = DBUtil.getConnection();
+            // 2. 쿼리 질의 객체 생성
+            Statement stmt = con.createStatement();
+            // 3. 결과집합을 반환 -> 객체생성 -> 리스트에 담기
+            ResultSet rs = stmt.executeQuery(sql);
+        ) {
+
+            if(rs.next()){
+                String empId = rs.getString(1);                
+                String empName = rs.getString(2);                
+                int salary = rs.getInt(8);                
+                
+                // 한명의 사원 정보를 반환
+                return new EmpDTO(empId, empName, salary);
+            }
+
+            
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return emp;
+    }
+
+    public int updateEntYn(String empId) {
+        int res = 0;
+        String sql = "UPDATE EMP SET ENT_YN='Y' WHERE EMP_ID='%s'".formatted(empId);
+
+        try(
+            // 1. connection 연결
+            Connection con = DBUtil.getConnection();
+            // 2. 쿼리 질의 객체 생성
+            Statement stmt = con.createStatement();
+            
+        )
+        {
+            res = stmt.executeUpdate(sql);
+            if(res > 0){
+                con.commit();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+
+
+        return res;
+    }
+
+    
 }
