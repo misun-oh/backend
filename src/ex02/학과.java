@@ -1,9 +1,12 @@
 package ex02;
 
+import ex06.필수입력;
+
 public class 학과 {
     // private : 외부에서 접근이 불가능!
     // 클래스 내부에서만 사용이 가능하다!
     // 필드를 초기화하지 않으면 타입의 기본값으로 설정
+    @필수입력
     private String 학과번호;
     private String 학과명;
     private int 정원;
