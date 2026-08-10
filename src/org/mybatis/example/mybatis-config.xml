@@ -5,10 +5,14 @@
 <configuration>
 
   <settings>
+    <!-- 컬럼이름을 CAMEL표기법으로 변환 해서 매핑 해주는 설정 -->
     <setting name="mapUnderscoreToCamelCase" value="true"/>
   </settings>
+
+  <!-- 환경설정 - 서버 접속정보 ip, port, database이름, 계정정보, driver-->
   <environments default="development">
     <environment id="development">
+    
       <transactionManager type="JDBC"/>
       <dataSource type="POOLED">
         <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
@@ -18,6 +22,8 @@
       </dataSource>
     </environment>
   </environments>
+
+  <!-- 사용할 Mapper 지정 -->
   <mappers>
     <mapper resource="org/mybatis/example/EmpMapper.xml"/>
   </mappers>
