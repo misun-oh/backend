@@ -22,7 +22,7 @@ public class Student extends Person{
 
     @Override
     public String toString() {
-        // TODO Auto-generated method stub
+        
         return super.toString() + """
                 학년 : %d
                 전공 : %s

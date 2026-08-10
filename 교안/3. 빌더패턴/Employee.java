@@ -6,7 +6,7 @@ import java.time.LocalDate;
  * - 생성자를 private으로 막고, 내부 정적 클래스 Builder를 통해서만 객체를 생성한다.
  * - 필드는 모두 final -> 한 번 만들어지면 값이 바뀌지 않는 불변 객체
  */
-public class EmployeeManualBuilder {
+public class Employee {
 
     private final String empId;
     private final String empName;
@@ -23,7 +23,7 @@ public class EmployeeManualBuilder {
     private final String entYn;
 
     // 1) 생성자를 private으로 막는다 -> new EmployeeManualBuilder(...)로 직접 생성 불가
-    private EmployeeManualBuilder(Builder builder) {
+    private Employee(Builder builder) {
         this.empId = builder.empId;
         this.empName = builder.empName;
         this.empNo = builder.empNo;
@@ -153,14 +153,14 @@ public class EmployeeManualBuilder {
         }
 
         // 4) build()에서 최종 검증 후 진짜 객체를 생성
-        public EmployeeManualBuilder build() {
+        public Employee build() {
             if (empId == null || empName == null) {
                 throw new IllegalStateException("empId와 empName은 필수입니다.");
             }
             if (jobCode == null) {
                 throw new IllegalStateException("jobCode는 필수입니다.");
             }
-            return new EmployeeManualBuilder(this);
+            return new Employee(this);
         }
     }
 
@@ -168,7 +168,7 @@ public class EmployeeManualBuilder {
     public static void main(String[] args) {
 
         // 성공 케이스: 선택적 필드(bonus, entDate)는 생략 가능
-        EmployeeManualBuilder emp = EmployeeManualBuilder.builder()
+        Employee emp = Employee.builder()
                 .empId("223")
                 .empName("홍길동")
                 .empNo("900101-1234567")
@@ -186,7 +186,7 @@ public class EmployeeManualBuilder {
 
         // 실패 케이스: 필수값(empId)을 빼고 build() 호출 -> 예외 발생
         try {
-            EmployeeManualBuilder invalid = EmployeeManualBuilder.builder()
+            Employee invalid = Employee.builder()
                     .empName("이름만있음")
                     .jobCode("J7")
                     .build();
