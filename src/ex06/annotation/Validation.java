@@ -7,7 +7,7 @@ public class Validation {
     // 오브젝트를 매개변수로 받아서
     // 필드정보를 정보를 확인
     // Required 어노테이션이 붙어 있는지 확인
-    public static void 검증(Object obj) throws IllegalArgumentException, IllegalAccessException{
+    public static void 검증(Object obj) throws Exception{
         // 객체로 부터 클래스 정보 얻어오기
         Class<?> clazz =  obj.getClass();
         
@@ -28,8 +28,19 @@ public class Validation {
                 field.setAccessible(true);
                 Object o = field.get(obj);
                 System.out.println("o : " + o);
+                // 참조타입일때 
                 if(o == null){
                     System.out.println(field.getName() + "필수 입력 항목 입니다.");
+                }
+                
+                // int일때 
+                // int타입의 기본값은 0
+                // 값이 0인지 아닌지 비교
+                
+                // int 타입이면
+                if(field.getType() == int.class && (int)o == 0){
+                    System.out.println(field.getName() + "필수 입력 항목 입니다.");
+                    throw new Exception(field.getName() + " 필수 입력 항목 입니다.");
                 }
             }
         }

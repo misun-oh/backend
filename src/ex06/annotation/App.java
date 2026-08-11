@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 import com.kh.inherit.practice.Employee;
 
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // 클래스 -> new 클래스 -> 객체 
         // 1. 객체로 부터 클래스의 정보를 조사
         Employee emp = 
