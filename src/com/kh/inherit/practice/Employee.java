@@ -3,6 +3,10 @@ package com.kh.inherit.practice;
 import ex06.annotation.Required;
 
 public class Employee extends Person{
+    // 필드는 타입의 기본값 
+    // 변수는 초기화 하지 않고 사용할 수 없다!
+    // 필드는 초기화 하지 않으면 타입의 기본값으로 초기화 된다!!!!!!!!
+    // obj : null, int/double : 0, 0.0
     @Required
     private int salary;
     private String dept;

@@ -24,7 +24,12 @@
   </environments>
 
   <!-- 사용할 Mapper 지정 -->
+  <!-- 설정을 직접 xml설정파일에 직접 작성 
+      -> 어노테이션 방식으로 변환 
+        인터페이스를 만들고 @mapper 어노테이션을 이용
+  -->
   <mappers>
     <mapper resource="org/mybatis/example/EmpMapper.xml"/>
+    
   </mappers>
 </configuration>
