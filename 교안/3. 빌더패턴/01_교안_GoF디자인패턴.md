@@ -1,4 +1,4 @@
-# GoF 디자인 패턴 소개
+# GoF(Gang of Four) 디자인 패턴 소개
 
 **학습 대상**: 자바 클래스/객체/인터페이스/상속/캡슐화를 배운 초·중급자 (1장 9~13강 수강자)
 **학습 목표**: 디자인 패턴이 무엇이고 왜 배우는지 이해하고, GoF 23가지 패턴이 생성·구조·행위 3가지로 분류되는 원리를 안다. UML 클래스 다이어그램을 읽을 수 있게 되어, 다음 시간에 배울 빌더 패턴의 구조를 미리 그려볼 수 있다.
@@ -79,6 +79,34 @@
 | `-->` (실선 화살표) | 연관 (Association) | "A가 B를 필드 등으로 계속 알고 있다" | `Director --> Builder` |
 | `..>` (점선 화살표) | 의존 (Dependency) | "A가 B를 잠깐(메서드 안에서) 사용한다" | `Builder ..> Product` |
 | `--` (화살표 없는 실선) | 단순 연결 | 표준 UML 관계는 아니지만, "B가 A 안에 정의된 static nested class다"처럼 자바 특유의 관계를 라벨로 설명할 때 사용 (교육용 편의 표기) | `Employee -- Builder : static nested class` |
+
+> 💡 **헷갈리기 쉬운 포인트: 연관·집합·합성은 코드만 보면 똑같이 "필드"입니다.** 셋 다 "필드로 참조를 들고 있다"는 점은 동일해서, 자바 문법만으로는 구별되지 않습니다. 차이는 **"그 필드를 누가 만드는가"**에 있습니다.
+>
+> ```java
+> // 합성 (Car *-- Engine)
+> class Car {
+>     private final Engine engine;
+>     public Car() {
+>         this.engine = new Engine();   // ★ Car가 스스로 만듦 (내부에서 new)
+>     }
+> }
+>
+> // 연관 (Garage --> Car)
+> class Garage {
+>     private List<Car> cars = new ArrayList<>();
+>     public void park(Car car) {       // ★ 이미 존재하는 Car를 밖에서 받음
+>         cars.add(car);
+>     }
+> }
+> ```
+>
+> | 기준 | 합성 (`*--`) | 연관 (`-->`) / 집합 (`o--`) |
+> |---|---|---|
+> | 누가 만드나 | 소유하는 쪽이 직접 `new`(보통 생성자 안에서) | 이미 만들어진 객체를 외부에서 받음(생성자 파라미터, setter, 메서드 인자) |
+> | 공유 가능한가 | 불가능 — 그 부분은 오직 그 하나의 전체만 씀 | 가능 — 같은 객체가 여러 곳과 관계를 맺을 수 있음 |
+> | 생명주기 | 전체가 사라지면 부분도 함께 사라짐 | 전체가 사라져도 부분은 계속 존재 |
+>
+> 즉 "필드가 있다"는 조건은 연관·집합·합성 모두 공통이고(그래서 셋 다 의존과는 구별됨), 셋 중 정확히 무엇인지는 "누가 만들고, 공유되고, 생명주기가 어떤가"까지 봐야 정해집니다. 실무에서는 집합과 연관의 경계가 흐릿한 경우가 많아서(이 구분 자체가 UML이 자주 받는 비판이기도 합니다), **"직접 만들어서 독점 소유하는가(합성) vs 남이 만든 걸 받아서 참조만 하는가(연관/집합)"** 정도만 확실히 구별해도 실용적으로 충분합니다.
 
 ### 4-3. 작은 예제로 연습하기
 
@@ -212,6 +240,7 @@ GoF는 23가지 패턴을 **"무엇에 관한 패턴인가"** 기준으로 3그�
 classDiagram
     class Director {
         -Builder builder
+        +Director(Builder)
         +construct() Product
     }
     class Builder {
@@ -221,20 +250,23 @@ classDiagram
         +getResult() Product
     }
     class ConcreteBuilder {
+        -Product product
         +buildPartA()
         +buildPartB()
         +getResult() Product
     }
     class Product
 
-    Director o-- Builder : 집합 - 조립을 위임
+    Director --> Builder : 연관 - 생성자로 외부에서 받아 필드로 보유
     Builder <|.. ConcreteBuilder : 구현 - ConcreteBuilder가 Builder를 구현
-    ConcreteBuilder ..> Product : 의존 - build 과정에서 Product를 생성
+    ConcreteBuilder *-- Product : 합성 - 필드로 직접 new해서 독점 소유
 ```
 
 - `Director`는 `Builder` 인터페이스만 알고, 구체적으로 어떤 `ConcreteBuilder`가 꽂혀 있는지는 모릅니다 (다형성).
 - `ConcreteBuilder`를 다른 구현체로 교체해도 `Director`의 조립 절차(레시피) 코드는 그대로 재사용됩니다.
-- 이게 바로 이번 장 4절(UML 읽는 법)에서 배운 **구현(`<|..`) 관계와 집합(`o--`) 관계**가 실제로 어떻게 쓰이는지 보여주는 예시입니다.
+- `Director`는 `Builder`를 직접 `new`하지 않고 **생성자로 외부에서 받아** 필드에 저장합니다. "전체-부분" 관계가 아니라 일할 때 위임할 협력자를 참조로 들고 있는 것뿐이라 **집합이 아니라 연관**입니다 — `Garage --> Car`와 같은 성격입니다.
+- 반대로 `ConcreteBuilder`는 `Product`를 필드로 직접 `new`해서(`private final Product product = new Product();`) 혼자만 소유합니다. 남에게 받은 것도, 공유되는 것도 아니라서 **합성**입니다 — `Car *-- Engine`과 같은 성격입니다.
+- 이게 바로 이번 장 4절(UML 읽는 법)에서 배운 **구현(`<|..`), 연관(`-->`), 합성(`*--`) 관계**가 실제로 어떻게 쓰이는지 보여주는 예시입니다.
 
 > 💻 이 다이어그램을 그대로 코드로 옮긴 예제가 첨부된 `GofBuilderPreview.java`입니다. `Employee` 같은 구체적인 도메인 없이 `Director`/`Builder`/`ConcreteBuilder`/`Product` 이름 그대로 구현되어 있으니, 다음 시간 `EmployeeGofBuilder.java`(Employee로 구체화한 버전)와 비교해보세요.
 
