@@ -1,6 +1,6 @@
 /**
  * 빌더 패턴을 GoF 원조 스타일(인터페이스 + 구현체 + Director)로 구현한 예제.
- * EmployeeManualBuilder.java(이너클래스 방식)와 결과는 비슷하지만 구조가 다르다.
+ * Employee.java(이너클래스 방식)와 결과는 비슷하지만 구조가 다르다.
  * - Product: Employee
  * - Builder(인터페이스): EmployeeBuilder
  * - ConcreteBuilder: DefaultEmployeeBuilder

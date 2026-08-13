@@ -22,7 +22,7 @@ public class Employee {
     private final LocalDate entDate;
     private final String entYn;
 
-    // 1) 생성자를 private으로 막는다 -> new EmployeeManualBuilder(...)로 직접 생성 불가
+    // 1) 생성자를 private으로 막는다 -> new Employee(...)로 직접 생성 불가
     private Employee(Builder builder) {
         this.empId = builder.empId;
         this.empName = builder.empName;

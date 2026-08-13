@@ -41,7 +41,7 @@ public class Student extends Object { // 모든 클래스는 명시하지 않아
 | `toString()` | 객체를 문자열로 표현할 때 사용 (기본은 클래스명@해시코드 형태) |
 | `equals(Object)` | 다른 객체와 같은지 비교 (기본은 참조값(주소) 비교, Day4 `==`과 동일) |
 | `hashCode()` | 객체를 정수 하나로 표현한 값, 주로 `equals()`와 짝지어 사용 |
-| `getClass()` | 객체의 클래스 정보를 반환 (Day14 리플렉션에서 이미 사용) |
+| `getClass()` | 객체의 클래스 정보를 반환 (리플렉션 등 심화 과정에서 활용) |
 
 ```java
 public class Student {
@@ -218,7 +218,7 @@ public class Student {
 | equals() | 기본은 참조(주소) 비교(Day4 `==`과 동일), 오버라이딩해서 내용 비교 기준을 직접 정의 |
 | equals() 오버라이딩 규칙 | 매개변수는 반드시 `Object` 타입, `instanceof`로 타입 확인 후 다운캐스팅 |
 | hashCode() | equals()를 재정의하면 반드시 함께 재정의, "같으면 hashCode도 같아야 한다"는 규칙 |
-| getClass() | 객체의 클래스 정보 반환 (Day14 리플렉션에서 이미 사용) |
+| getClass() | 객체의 클래스 정보 반환 (리플렉션 등 심화 과정에서 활용) |
 
 다음 챕터(Day15)에서는 제네릭을 배우면서, `Object`가 왜 "모든 타입을 담을 수 있는 만능 타입"으로 쓰였는지, 그리고 그 한계를 제네릭이 어떻게 해결하는지 연결해서 이해합니다.
 

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 /**
  * Lombok @Builder를 사용한 버전.
- * EmployeeManualBuilder.java와 동작은 완전히 동일하지만,
+ * Employee.java와 동작은 완전히 동일하지만,
  * Builder 내부 클래스 / builder() / 세터들 / build()를 Lombok이 자동 생성해준다.
  *
  * 실행하려면 pom.xml(또는 build.gradle)에 lombok 의존성이 추가되어 있어야 한다.

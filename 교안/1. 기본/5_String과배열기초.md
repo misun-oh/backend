@@ -25,7 +25,7 @@ public class 불변성예제 {
 }
 ```
 
-**설명**: 기존 `"홍길동"` 문자열 객체는 그대로 있고, `이름` 변수가 새로 만들어진 `"홍길동님"` 객체를 가리키도록 바뀐 것입니다. 이 특성 때문에 문자열을 반복문 안에서 많이 연결하면 매번 새 객체가 생성되어 비효율적일 수 있습니다(이 문제의 해결책인 `StringBuilder`는 Day 6~이후에 다룰 수 있습니다).
+**설명**: 기존 `"홍길동"` 문자열 객체는 그대로 있고, `이름` 변수가 새로 만들어진 `"홍길동님"` 객체를 가리키도록 바뀐 것입니다. 이 특성 때문에 문자열을 반복문 안에서 많이 연결하면 매번 새 객체가 생성되어 비효율적일 수 있습니다(이 문제를 해결하는 `StringBuilder`는 이후 심화 과정에서 다룹니다).
 
 ---
 
@@ -51,7 +51,7 @@ public class String메서드예제 {
     public static void main(String[] args) {
         String 문장 = "  Hello Java World  ";
 
-        System.out.println(문장.length());              // 21 (앞뒤 공백 포함)
+        System.out.println(문장.length());              // 20 (앞뒤 공백 포함)
         System.out.println(문장.trim());                 // "Hello Java World" (앞뒤 공백 제거)
         System.out.println(문장.trim().charAt(0));       // 'H' (0번째 글자)
         System.out.println(문장.trim().substring(6));    // "Java World"

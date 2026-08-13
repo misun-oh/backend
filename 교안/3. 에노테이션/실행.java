@@ -10,7 +10,7 @@ public class 실행 {
 
         System.out.println("class : "+EmpDao.class );
 
-        학과 학과1 = new 학과("컴퓨터공학", 40);
+        학과 학과1 = new 학과("D001", "컴퓨터공학", 40);
         
         Field[] fields = 학과1.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -26,7 +26,7 @@ public class 실행 {
 
         System.out.println(clazzA == clazzB); // true! 같은 클래스를 가리키므로 결과는 항상 같음
 
-        학과 학과2 = new 학과(null, 40);
+        학과 학과2 = new 학과("D002", null, 40); // 학과명을 일부러 비워둠
         try {
             검증기.검증(학과2);
         } catch (Exception e) {

@@ -127,7 +127,7 @@ classDiagram
     SortedSet <|.. TreeSet
     Map <|.. Hashtable
     Map <|.. HashMap
-    Map <|.. SortedMap
+    Map <|-- SortedMap
     SortedMap <|.. TreeMap
 ```
 

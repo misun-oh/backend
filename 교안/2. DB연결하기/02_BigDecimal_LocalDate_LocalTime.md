@@ -98,7 +98,7 @@ public class BigDecimalCreateExample {
 | `subtract(값)` | 빼기 | `a.subtract(b)` |
 | `multiply(값)` | 곱하기 | `a.multiply(b)` |
 | `divide(값)` | 나누기 | `a.divide(b)` |
-| `compareTo(값)` | 크기 비교 (음수/0/양수 반환, Day15 부록4의 Comparator와 같은 관례) | `a.compareTo(b)` |
+| `compareTo(값)` | 크기 비교 (음수/0/양수 반환, 부록4(람다식)의 Comparator와 같은 관례) | `a.compareTo(b)` |
 
 ```java
 import java.math.BigDecimal;
