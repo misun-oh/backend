@@ -11,7 +11,7 @@ public class EmpDto {
 
     // builder에 있는 필드값을 이용해서 객체를 생성하고 반환
     // private 생성자를 막아놈 -> 외부에서 생성 할 수 없음!
-    private EmpDto(Builder builder){
+    public EmpDto(Builder builder){
 
 
         // 빌더에 있는 값을 EmpDto에 세팅
@@ -30,14 +30,18 @@ public class EmpDto {
         private String empId;        // 사원번호 (PK)
         private String empName;      // 직원명
         private String empNo;        // 주민등록번호
-        public void setEmpId(String empId) {
+
+        public Builder setEmpId(String empId) {
             this.empId = empId;
+            return this;
         }
-        public void setEmpName(String empName) {
+        public Builder setEmpName(String empName) {
             this.empName = empName;
+            return this;
         }
-        public void setEmpNo(String empNo) {
+        public Builder setEmpNo(String empNo) {
             this.empNo = empNo;
+            return this;
         }
 
         public EmpDto build(){
