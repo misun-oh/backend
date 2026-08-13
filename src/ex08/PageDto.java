@@ -92,6 +92,12 @@ public class PageDto {
     }
 
 
+    public PageDto(int totalCnt) {
+        // 생성자 호출
+        this(1, totalCnt);
+    }
+
+
     public static void main(String[] args) {
         int size = 10;
         int totalCnt = 99;
