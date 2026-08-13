@@ -8,7 +8,7 @@ import lombok.NonNull;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
+//@NoArgsConstructor
 @Builder
 public class DeptDto {
     private String deptId;
