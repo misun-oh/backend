@@ -62,7 +62,7 @@ public class PageDto {
 
         // 총 99건의 데이터가 있고 요청한 페이지 번호가 2페이지라면
         // 11번부터 20번까지 데이터를 조회 하고 싶다
-        this.eNo = (int)Math.ceil(totalCnt/(double)size) * page;
+        this.eNo = size * page;
         this.sNo = eNo - (size-1);
         
         System.out.println("게시물의 시작번호 : " + sNo);
@@ -117,7 +117,7 @@ public class PageDto {
         System.out.println((int)(Math.ceil(totalCnt/(size*1.0))*page) - (size-1));
 
 
-        PageDto pageDto = new PageDto(7, 150);
+        PageDto pageDto = new PageDto(5, 130);
         System.out.println(pageDto);
 
     }

@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 460" font-family="'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="820" height="460" fill="#ffffff"/>
+
+  <text x="410" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#1e293b">
+    버퍼를 사용하는 이유 — 디스크 접근 횟수 줄이기
+  </text>
+
+  <!-- ===================== Row 1: 버퍼 없이 ===================== -->
+  <text x="30" y="78" font-size="16" font-weight="700" fill="#dc2626">버퍼 없이 (FileWriter만)</text>
+
+  <g font-size="12" fill="#334155">
+    <!-- 5 write() calls -->
+    <g transform="translate(60,95)">
+      <rect width="80" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="40" y="21" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(200,95)">
+      <rect width="80" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="40" y="21" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(340,95)">
+      <rect width="80" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="40" y="21" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(480,95)">
+      <rect width="80" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="40" y="21" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(620,95)">
+      <rect width="80" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+      <text x="40" y="21" text-anchor="middle">write()</text>
+    </g>
+  </g>
+
+  <!-- individual arrows straight down to disk row -->
+  <line x1="100" y1="129" x2="100" y2="178" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <line x1="240" y1="129" x2="240" y2="178" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <line x1="380" y1="129" x2="380" y2="178" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <line x1="520" y1="129" x2="520" y2="178" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <line x1="660" y1="129" x2="660" y2="178" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+  <!-- disk icons x5 -->
+  <g fill="#fecaca" stroke="#dc2626" stroke-width="1.5">
+    <g transform="translate(80,180)">
+      <ellipse cx="20" cy="8" rx="20" ry="8"/>
+      <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+      <ellipse cx="20" cy="30" rx="20" ry="8" fill="#fecaca"/>
+    </g>
+    <g transform="translate(220,180)">
+      <ellipse cx="20" cy="8" rx="20" ry="8"/>
+      <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+      <ellipse cx="20" cy="30" rx="20" ry="8" fill="#fecaca"/>
+    </g>
+    <g transform="translate(360,180)">
+      <ellipse cx="20" cy="8" rx="20" ry="8"/>
+      <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+      <ellipse cx="20" cy="30" rx="20" ry="8" fill="#fecaca"/>
+    </g>
+    <g transform="translate(500,180)">
+      <ellipse cx="20" cy="8" rx="20" ry="8"/>
+      <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+      <ellipse cx="20" cy="30" rx="20" ry="8" fill="#fecaca"/>
+    </g>
+    <g transform="translate(640,180)">
+      <ellipse cx="20" cy="8" rx="20" ry="8"/>
+      <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+      <ellipse cx="20" cy="30" rx="20" ry="8" fill="#fecaca"/>
+    </g>
+  </g>
+  <text x="410" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#dc2626">
+    write() 5번 → 디스크 접근 5번 (느림)
+  </text>
+
+  <line x1="0" y1="265" x2="820" y2="265" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- ===================== Row 2: 버퍼 사용 ===================== -->
+  <text x="30" y="300" font-size="16" font-weight="700" fill="#16a34a">버퍼 사용 (BufferedWriter)</text>
+
+  <g font-size="12" fill="#334155">
+    <g transform="translate(60,317)">
+      <rect width="70" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="35" y="19" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(190,317)">
+      <rect width="70" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="35" y="19" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(320,317)">
+      <rect width="70" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="35" y="19" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(450,317)">
+      <rect width="70" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="35" y="19" text-anchor="middle">write()</text>
+    </g>
+    <g transform="translate(580,317)">
+      <rect width="70" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+      <text x="35" y="19" text-anchor="middle">write()</text>
+    </g>
+  </g>
+
+  <!-- arrows converging into buffer box -->
+  <line x1="95" y1="347" x2="330" y2="378" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="225" y1="347" x2="340" y2="378" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="355" y1="347" x2="355" y2="378" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="485" y1="347" x2="370" y2="378" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="615" y1="347" x2="380" y2="378" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- buffer box -->
+  <g transform="translate(260,380)">
+    <rect width="240" height="36" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.5"/>
+    <text x="120" y="23" text-anchor="middle" font-size="13" fill="#3730a3">버퍼 (메모리, 8192자)</text>
+  </g>
+
+  <!-- one arrow to disk -->
+  <line x1="500" y1="398" x2="600" y2="398" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+
+  <!-- single disk icon -->
+  <g transform="translate(610,378)" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.5">
+    <ellipse cx="20" cy="8" rx="20" ry="8"/>
+    <path d="M0,8 L0,30 A20,8 0 0 0 40,30 L40,8"/>
+    <ellipse cx="20" cy="30" rx="20" ry="8" fill="#bbf7d0"/>
+  </g>
+
+  <text x="700" y="401" font-size="13" font-weight="700" fill="#16a34a">
+    디스크 접근 1번
+  </text>
+
+  <text x="30" y="440" font-size="13" fill="#475569">
+    write() 5번 → 버퍼에 모았다가 한 번에 디스크 접근 (빠름) — 실측: 5만 줄 기준 버퍼 없이 66~69ms → 버퍼 사용 15~25ms (약 3~4배)
+  </text>
+</svg>
