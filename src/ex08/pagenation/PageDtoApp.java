@@ -1,4 +1,4 @@
-package ex08;
+package ex08.pagenation;
 
 public class PageDtoApp {
     public static void main(String[] args) {

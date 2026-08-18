@@ -1,4 +1,4 @@
-package ex06;
+package ex06.annotation;
 
 import ex02.학과;
 import ex05.dao.EmpDao;

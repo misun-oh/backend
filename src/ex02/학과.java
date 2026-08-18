@@ -1,6 +1,6 @@
 package ex02;
 
-import ex06.필수입력;
+import ex06.annotation.필수입력;
 
 public class 학과 {
     // private : 외부에서 접근이 불가능!

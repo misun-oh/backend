@@ -1,4 +1,4 @@
-package ex10.lambda;
+package ex01.lambda;
 
 @FunctionalInterface
 public interface StudentFactory {

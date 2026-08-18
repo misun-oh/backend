@@ -1,4 +1,4 @@
-package ex06;
+package ex06.annotation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
