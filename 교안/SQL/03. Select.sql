@@ -73,9 +73,39 @@ FROM 	EMP
 WHERE 	DEPT_ID='D1'
 AND 	SALARY NOT BETWEEN 1500000 AND 3000000;
 
+-- 대문자 자동완성
+-- 상단 메뉴에서 Edit ->️ Preferences 
+-- -> Query Editor -> Use UPPERCASE keywords on completion 체크
+-- autocommit 해제
+-- -> SQL Execution -> New connections use auto commit mode 체크해제
 
+-- 오토커밋 : 쿼리의 실행결과가 바로 반영
+-- 0 : FALSE, 1: TRUE
+-- @@ : MYSQL 시스템 변수
+SELECT @@autocommit;
+-- 1. 쿼리를 통해서 변경
+-- 트랜젝션 처리(여러개의 실행쿼리를 하나로 묶는 작업) - DML
+SET AUTOCOMMIT = 0; -- 오토커밋 해제
 
+COMMIT; -- DB 반영
+ROLLBACK; -- 취소
+SET AUTOCOMMIT = 1; -- 오토커밋 설정
 
+-- 2. 워크벤치의 설정을 통해서 변경
+
+SELECT * FROM emp;
+
+-- 테이블이 가지고 있는 컬럼정보 확인
+DESC EMP;
+
+-- 부서코드가 D5 인 직원의 사번, 이름, 입사일을 조회 (급여가 높은순으로 내림차순 정렬 - ORDER BY)
+-- ORDER BY 컬럼이름 [ASC/DESC]
+-- ASC 오름차순 정렬 - 기본값 생략가능
+-- DESC 내림차순 정렬
+SELECT	EMP_ID, EMP_NAME, HIRE_DATE, SALARY
+FROM	EMP
+WHERE	DEPT_ID = 'D5'
+ORDER BY SALARY DESC;
 
 
 
