@@ -252,6 +252,11 @@ WHERE DEPT_ID = 'D5' AND JOB_CODE = 'J7';
 SELECT *
 FROM EMP
 WHERE (JOB_CODE = 'J7' OR JOB_CODE = 'J6') AND SALARY >= 2000000;
+
+-- 사원(J7)이 아닌 사람 (NOT을 단독으로 사용)
+SELECT *
+FROM EMP
+WHERE NOT (JOB_CODE = 'J7');
 ```
 
 **연산자 우선순위** (숫자가 낮을수록 먼저 계산됨)
@@ -259,18 +264,21 @@ WHERE (JOB_CODE = 'J7' OR JOB_CODE = 'J6') AND SALARY >= 2000000;
 | 순위 | 연산자 |
 |---|---|
 | 1 | 산술 연산자 (`*`, `/`, `+`, `-`) |
-| 2 | 연결 연산자 (`\|\|`) |
-| 3 | 비교 연산자 |
-| 4 | `IS NULL`, `LIKE`, `IN` |
-| 5 | `BETWEEN AND` |
-| 6 | `NOT` |
-| 7 | `AND` |
-| 8 | `OR` |
+| 2 | 비교 연산자, `IS NULL`, `LIKE`, `IN` |
+| 3 | `BETWEEN AND` |
+| 4 | `NOT` |
+| 5 | `AND` |
+| 6 | `OR` |
 
 **설명**: `AND`가 `OR`보다 먼저 계산되기 때문에, `WHERE A OR B AND C`는 `WHERE A OR (B AND C)`로
 해석됩니다. 의도가 "(A 또는 B) 그리고 C"라면 반드시 괄호로 `WHERE (A OR B) AND C`처럼
 명시해야 합니다. **우선순위를 외우기보다, 조건이 2개 이상 섞이면 습관적으로 괄호를 쓰는 것을
 권장합니다.**
+
+> **주의**: 표준 SQL/Oracle에서는 `||`가 문자열을 이어붙이는 연결 연산자지만, **MySQL은
+> 기본 모드(`PIPES_AS_CONCAT` 비활성화 시)에서 `||`를 논리 `OR`와 동일하게 처리**합니다.
+> 예를 들어 `SELECT 'a' || 'b';`는 `'ab'`가 아니라 `0`을 반환합니다. MySQL에서 문자열을
+> 이어붙일 때는 반드시 `CONCAT()`을 사용하세요(`2. 함수(FUNCTION)/1_함수.md` 1절 참고).
 
 ---
 

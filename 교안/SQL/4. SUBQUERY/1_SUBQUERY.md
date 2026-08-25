@@ -44,7 +44,8 @@ WHERE SALARY > (SELECT AVG(SALARY) FROM EMP);   -- 괄호 안이 서브쿼리
 ```sql
 SELECT EMP_NAME, SALARY
 FROM EMP
-WHERE SALARY > (SELECT AVG(SALARY) FROM EMP);
+WHERE SALARY > (SELECT AVG(SALARY) FROM EMP)
+ORDER BY SALARY DESC;
 ```
 
 **출력 결과**
@@ -356,3 +357,7 @@ OFFSET 3`이라고 써도 완전히 같은 결과입니다.
 | 인라인 뷰 (FROM절 서브쿼리) | 서브쿼리 결과를 임시 테이블처럼 사용 | 부서별 평균 급여 집계 후 조인 |
 | WITH (CTE) | 서브쿼리에 이름을 붙여 재사용 | 인라인 뷰를 더 읽기 쉽게 표현 |
 | LIMIT | 정렬 후 상위 N개만 추출 (ROWNUM 대체) | 급여 상위 3명 조회 |
+
+> 이것으로 DQL/함수/JOIN/SUBQUERY 4개 챕터를 모두 배웠습니다. `2_쿼리실행순서.md`에서
+> `FROM`부터 `LIMIT`까지, 이 4개 챕터의 절들이 실제로 어떤 순서로 처리되는지 종합해서
+> 정리합니다.
