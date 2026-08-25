@@ -95,6 +95,18 @@ ORDER BY E.EMP_ID;
 -- 참고: NOT IN은 목록에 NULL이 섞이면 결과가 통째로 비어버릴 수 있음
 -- -> 그럴 가능성이 있으면 NOT IN 대신 NOT EXISTS 사용
 
+-- 상관 서브쿼리 - 비교 연산자 활용 (EXISTS 없이)
+-- 비교 기준(자기 부서 평균)이 바깥 행마다 달라지는 경우
+-- 부서가 없는 사원(NULL)은 서브쿼리가 빈 결과 -> SALARY > NULL은 UNKNOWN -> 자동 제외
+SELECT	E.EMP_NAME, E.DEPT_ID, E.SALARY
+FROM	EMP E
+WHERE	E.SALARY > (
+	SELECT AVG(E2.SALARY)
+	FROM EMP E2
+	WHERE E2.DEPT_ID = E.DEPT_ID
+)
+ORDER BY E.EMP_ID;
+
 
 -- ================================
 -- 7. FROM절 서브쿼리 (인라인 뷰)
@@ -127,6 +139,21 @@ FROM	DEPT_AVG DA
 JOIN	DEPT D ON DA.DEPT_ID = D.DEPT_ID
 WHERE	DA.평균급여 >= 3000000;
 
+-- 여러 개의 CTE를 한 번에 정의 (콤마로 이어씀, 뒤 CTE가 앞 CTE를 참조 가능)
+WITH DEPT_AVG AS (
+	SELECT DEPT_ID, ROUND(AVG(SALARY)) AS 평균급여
+	FROM EMP
+	GROUP BY DEPT_ID
+),
+HIGH_AVG_DEPT AS (
+	SELECT DEPT_ID, 평균급여
+	FROM DEPT_AVG
+	WHERE 평균급여 >= 3000000
+)
+SELECT	D.DEPT_TITLE, H.평균급여
+FROM	HIGH_AVG_DEPT H
+JOIN	DEPT D ON H.DEPT_ID = D.DEPT_ID;
+
 
 -- ================================
 -- 9. LIMIT을 이용한 Top-N 분석
@@ -138,9 +165,16 @@ FROM	EMP
 ORDER BY SALARY DESC
 LIMIT 3;
 
--- LIMIT 시작위치, 개수 : 시작 위치는 0부터 셈 (= LIMIT 3 OFFSET 3)
--- 4번째 행부터 3개(4~6등) 조회
+-- LIMIT 오프셋, 개수 : 오프셋은 "건너뛸 행 개수"(0부터 셈), "시작 위치"가 아님
+-- (= LIMIT 3 OFFSET 3) 3개를 건너뛴 다음 행(=4등)부터 3개(4~6등) 조회
 SELECT	EMP_NAME, SALARY
 FROM	EMP
 ORDER BY SALARY DESC
 LIMIT 3, 3;
+
+-- 페이지네이션: OFFSET = (페이지번호 - 1) x 페이지당개수
+-- 2페이지, 페이지당 5명 -> OFFSET = (2-1) x 5 = 5
+SELECT	EMP_NAME, SALARY
+FROM	EMP
+ORDER BY SALARY DESC
+LIMIT 5, 5;

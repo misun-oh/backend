@@ -367,3 +367,39 @@ LIMIT 2;
 2,126,560). 문제 7이 `ORDER BY ... DESC LIMIT 1`로 평균 급여 **1위**만 뽑았다면, 이
 문제는 `ORDER BY ... ASC LIMIT 2`로 평균 급여가 가장 낮은 직급 **하위 2곳**(사원,
 차장)을 뽑습니다.
+
+---
+
+### 문제 15. 여러 개의 CTE
+
+```sql
+WITH DEPT_COUNT AS (
+    SELECT DEPT_ID, COUNT(*) AS 인원수
+    FROM EMP
+    GROUP BY DEPT_ID
+),
+BIG_DEPT AS (
+    SELECT DEPT_ID, 인원수
+    FROM DEPT_COUNT
+    WHERE 인원수 >= 3
+)
+SELECT D.DEPT_TITLE, B.인원수
+FROM BIG_DEPT B
+JOIN DEPT D ON B.DEPT_ID = D.DEPT_ID
+ORDER BY B.인원수 DESC, B.DEPT_ID ASC;
+```
+
+**출력 결과**
+```
+해외영업1부 5
+인사관리부  3
+회계관리부  3
+기술지원부  3
+총무부      3
+```
+
+**설명**: `WITH` 뒤에 콤마로 이어 쓴 두 번째 CTE(`BIG_DEPT`)가 첫 번째 CTE
+(`DEPT_COUNT`)를 `FROM`절에서 그대로 참조합니다. 부서별 인원수는 D9(총무부) 3명,
+D6(해외영업2부) 2명, D5(해외영업1부) 5명, D1(인사관리부) 3명, D8(기술지원부) 3명,
+D2(회계관리부) 3명이며, 이 중 2명뿐인 해외영업2부만 `인원수 >= 3` 조건에서 제외됩니다.
+동률(3명)인 네 부서는 `DEPT_ID` 오름차순으로 정렬해 결과 순서를 고정했습니다.
