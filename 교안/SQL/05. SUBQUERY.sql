@@ -192,21 +192,151 @@ SELECT  EMP_NO, SUBSTRING(EMP_NO, 1, 2) 년도, SUBSTRING(EMP_NO, 8, 1) 뒤자�
         , TIMESTAMPDIFF(YEAR, STR_TO_DATE( CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
 				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
         END, '%Y%m%d'), NOW()) 나이
+        , STR_TO_DATE( CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
+				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
+        END, '%Y%m%d')
 FROM 	EMP;
 
+-- TIMESTAMPDIFF(단위, 날짜1, 날짜2)
+-- 주민번호롤 부터 생년월일 850512-1234567
+-- 주민번호는 년도를 2자리로 표현하고 있으므로 
+-- 뒷의 첫번째 자리가 1,2 이면 19를 3,4이면 20을 붙여서 4자리년도월일(19850512)로 만들어 준다
+-- 붙여준다 - 문자열 연결 concat(문자, 문자)
+-- 형변환(STR_TO_DATE('문자', '타입'))후 날자연산
+SELECT	EMP_NO 주민번호
+		, SUBSTRING(EMP_NO, 1, 6) 생년월일
+        , SUBSTRING(EMP_NO, 8, 1) 뒷자리1자리
+        , SUBSTRING(EMP_NO, INSTR(EMP_NO, '-')+1, 1) 뒷자리1자리
+        , INSTR(EMP_NO, '-')+1 '-의 위치+1' 
+        , CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
+				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
+                ELSE '판단불가'
+                END '년월일(8자리)'
+		, STR_TO_DATE('19800514', '%Y%m%d') 날자형변환		-- 날자타입으로 형변환
+--        , TIMESTAMPDIFF(YEAR, STR_TO_DATE('19800514', '%Y%m%d'), NOW()) 날자비교
+        , TIMESTAMPDIFF(YEAR, STR_TO_DATE(
+			CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
+				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
+                ELSE '판단불가'
+                END
+        , '%Y%m%d'), NOW()) 날자비교
+        , TIMESTAMPDIFF(MONTH, STR_TO_DATE(
+			CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
+				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
+                ELSE '판단불가'
+                END
+        , '%Y%m%d'), NOW()) 날자비교
+        , TIMESTAMPDIFF(MONTH, STR_TO_DATE(
+			CASE WHEN SUBSTRING(EMP_NO, 8, 1) IN ('1', '2') THEN CONCAT('19', SUBSTRING(EMP_NO, 1, 6))
+				WHEN SUBSTRING(EMP_NO, 8, 1) IN ('3', '4') THEN CONCAT('20', SUBSTRING(EMP_NO, 1, 6))
+                ELSE '판단불가'
+                END
+        , '%Y%m%d'), NOW()) MOD 12 '나머지 개월'
+FROM 	EMP;
 
-
-
+-- 나머지 구하기
+SELECT 308 MOD 12;
 
 -- 가장 최근에 입사한 사원과 성이 같은 사원의 정보
+SELECT * 
+FROM EMP
+WHERE EMP_NAME LIKE CONCAT((SELECT SUBSTRING(EMP_NAME,1,1) 성 FROM EMP WHERE HIRE_DATE = (SELECT MAX(HIRE_DATE) FROM EMP)), '%');
+
+SELECT SUBSTRING(EMP_NAME,1,1) 성 FROM EMP WHERE HIRE_DATE = (SELECT MAX(HIRE_DATE) FROM EMP);
+
+-- 입사한지 10년이 지난 사원의 보너스률을 10%인상해서 출력
+SELECT 	EMP_NAME 이름, BONUS 보너스, BONUS+0.1 인상된보너스, HIRE_DATE, TIMESTAMPDIFF(YEAR, HIRE_DATE, NOW()) 년차
+FROM	EMP
+WHERE 	TIMESTAMPDIFF(YEAR, HIRE_DATE, NOW()) > 10;
+
+-- 인라인뷰 (서브쿼리를 FROM절에서 이용할 경우)
+-- MYSQL에서는 인라인뷰에 별칭(가상테이블 이름)을 주지 않으면 오류가 발생할수 있다
+SELECT * 
+FROM	(SELECT  DEPT_ID, AVG(SALARY) AVG
+			FROM 	EMP
+			GROUP 	BY DEPT_ID) T
+-- 인라인뷰의 실행결과 컬럼만 사용 가능
+WHERE 	AVG > 3000000;
+
+-- 서브쿼리로 만들어서 FROM절에 넣어줌!
+SELECT 	* 
+FROM  	(SELECT 
+				`emp`.`EMP_NAME` AS `EMP_NAME`,
+				`dept`.`DEPT_TITLE` AS `DEPT_TITLE`,
+				`location`.`LOCAL_NAME` AS `LOCAL_NAME`,
+				`national`.`NATIONAL_NAME` AS `NATIONAL_NAME`
+			FROM
+				(((`emp`
+				LEFT JOIN `dept` ON ((`emp`.`DEPT_ID` = `dept`.`DEPT_ID`)))
+				LEFT JOIN `location` ON ((`dept`.`LOCATION_ID` = `location`.`LOCAL_CODE`)))
+				LEFT JOIN `national` ON ((`location`.`NATIONAL_CODE` = `national`.`NATIONAL_CODE`)))) T
+WHERE NATIONAL_NAME = '중국';
+
+-- 인라인뷰를 사용할경우 테이블을 만드는 서브쿼리가 쿼리내에 존재하므로 길고 복잡한 쿼리가 생성됨
+-- WITH절을 이용해서 서브쿼리로 가상테이블을 만들어주고 본문에서 참조
+WITH T AS	(SELECT 
+				`emp`.`EMP_NAME` AS `EMP_NAME`,
+				`dept`.`DEPT_TITLE` AS `DEPT_TITLE`,
+				`location`.`LOCAL_NAME` AS `LOCAL_NAME`,
+				`national`.`NATIONAL_NAME` AS `NATIONAL_NAME`
+			FROM
+				(((`emp`
+				LEFT JOIN `dept` ON ((`emp`.`DEPT_ID` = `dept`.`DEPT_ID`)))
+				LEFT JOIN `location` ON ((`dept`.`LOCATION_ID` = `location`.`LOCAL_CODE`)))
+				LEFT JOIN `national` ON ((`location`.`NATIONAL_CODE` = `national`.`NATIONAL_CODE`))))
+SELECT * FROM T;
 
 
+-- 페이징처리에 사용 LIMIT 
+-- 급여가 높은 5명 (TOP-N)
+SELECT 	*
+FROM 	EMP
+ORDER BY SALARY DESC
+LIMIT 0,5;
+
+SELECT 	*
+FROM 	EMP
+ORDER BY SALARY DESC
+-- LIMIT 오프셋, 개수
+-- 페이지 처리 (전페이지의 끝번호, 페이지당 게시물 수)
+-- (요청페이지번호-1) * 10
+-- 페이지당 게시물수
+LIMIT 5, 3;
+
+SELECT 	*
+FROM 	EMP
+ORDER BY SALARY DESC;
+
+-- 매니져 조회
+-- MANAGER_ID : 매니져의 사번이 입력되어 있는 컬럼
+SELECT DISTINCT	MANAGER_ID
+FROM 	EMP;
+-- 매니져의 사원정보
+SELECT 	DISTINCT 사원.EMP_ID, 사원.EMP_NAME
+FROM 	EMP 사원
+JOIN 	EMP 매니져 ON 사원.EMP_ID = 매니져.MANAGER_ID;
+
+SELECT 	* 
+FROM 	EMP
+WHERE 	MANAGER_ID = '200';
+
+-- 계층형 쿼리 - 트리관계를 표현 - 조직도
+--      메뉴 - 계층형 쿼리를 이용해서 트리관계로 출력 - 메뉴를 데이터 베이스로 관리
 
 
+SELECT 	*
+FROM 	EMP
+WHERE 	MANAGER_ID IS NULL;
 
-
-
-
-
-
-
+-- 2000000, 2550000
+SELECT SALARY FROM EMP WHERE DEPT_ID = 'D8';
+SELECT EMP_NAME, SALARY
+FROM EMP
+-- IN, ANY, ALL
+-- IN : 일치하는 
+-- ALL : 최소값 보다 작은 (조회된 값 모두 만족)
+-- ANY : 최대값 보다 작은 (어느하나라도 만족)
+WHERE SALARY < ANY (
+    SELECT SALARY FROM EMP WHERE DEPT_ID = 'D8'
+)
+ORDER BY SALARY ASC;
