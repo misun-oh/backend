@@ -35,6 +35,31 @@ SELECT COUNT(*) FROM EMP_COPY;
 21
 ```
 
+### 실습 전 확인 — "Safe Updates" 모드
+
+MySQL Workbench는 실수로 테이블 전체를 바꾸는 사고를 막으려고 **Safe Updates**
+(`sql_safe_updates`) 모드를 **기본으로 켭니다**. 이 모드가 켜져 있으면 **키(인덱스)
+컬럼을 조건으로 쓰지 않는** `UPDATE`/`DELETE`를 실행하지 않고 다음 오류로 거부합니다.
+
+```
+Error Code: 1175. You are using safe update mode and you tried to update a table
+without a WHERE that uses a KEY column ...
+```
+
+이 챕터의 `EMP_COPY`는 `CREATE TABLE ... AS SELECT`로 만들어 **PK·인덱스가 없으므로**,
+`WHERE EMP_ID = '222'`처럼 조건을 걸어도 "키 컬럼이 아니다"로 막힙니다. 실습이
+진행되도록 현재 커넥션에서만 잠시 꺼 둡니다.
+
+```sql
+SELECT @@SESSION.sql_safe_updates;   -- 1이면 켜져 있음, 0이면 꺼져 있음
+SET SESSION sql_safe_updates = 0;    -- 이 커넥션에서만 해제 (재접속하면 원상복구)
+```
+
+> Workbench의 `Edit → Preferences → SQL Editor`의 **"Safe Updates"** 체크로도 끌 수
+> 있으며, 이 방법은 **재접속해야** 반영됩니다. 실습이 끝나면
+> `SET SESSION sql_safe_updates = 1;`로 다시 켜 두는 습관을 들이세요 — 실무 커넥션에서는
+> 켜 두는 편이 안전합니다(9절).
+
 ---
 
 ## 2. INSERT INTO - 전체 컬럼
@@ -215,7 +240,9 @@ UPDATE EMP_COPY SET SALARY = 0;
 ```
 
 `SELECT`는 조건이 잘못돼도 "잘못된 결과를 보여줄 뿐"이지만, `UPDATE`/`DELETE`는 조건이
-잘못되면 **데이터 자체가 잘못 바뀌거나 사라집니다**. 그래서 실무에서는 다음 순서로
+잘못되면 **데이터 자체가 잘못 바뀌거나 사라집니다**. 1절에서 잠시 꺼 둔
+`sql_safe_updates` 모드가 바로 이런 `WHERE` 없는(혹은 키 컬럼을 안 쓰는)
+`UPDATE`/`DELETE`를 막아 주는 안전장치입니다 — 실무 커넥션에서는 켜 두고, 아래처럼
 작업하는 습관을 들입니다.
 
 1. 먼저 같은 `WHERE` 조건으로 `SELECT`를 실행해서 "이 조건에 걸리는 행이 내가 예상한
@@ -278,6 +305,10 @@ SELECT COUNT(*) FROM EMP_COPY;
   `SELECT`절의 컬럼 목록이 개수와 순서가 맞아야 합니다.
 - **외래키(FK)가 걸린 상태에서 참조되는 부모 행을 먼저 삭제** → 참조 무결성 오류가
   납니다(`DDL` 챕터 4.1절 참고). 자식 행을 먼저 삭제하거나 FK 제약을 확인해야 합니다.
+- **`UPDATE`/`DELETE`가 `Error 1175`로 막힘** → Workbench의 Safe Updates 모드가 켜져
+  있고, 조건이 키(인덱스) 컬럼을 쓰지 않을 때입니다. `SET SESSION sql_safe_updates = 0;`
+  으로 해제하거나(1절), 대상 테이블에 인덱스를 만듭니다. 오타로 조건을 빠뜨린 건
+  아닌지부터 확인하세요.
 
 ---
 

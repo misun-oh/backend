@@ -11,6 +11,15 @@ CREATE TABLE EMP_COPY AS SELECT * FROM EMP;
 
 SELECT COUNT(*) FROM EMP_COPY;   -- 21
 
+-- [환경 확인] Safe Updates 모드 (sql_safe_updates)
+-- MySQL Workbench는 이 모드를 기본으로 켠다. 켜져 있으면 키(인덱스) 컬럼을 조건으로
+-- 쓰지 않는 UPDATE/DELETE를 Error 1175로 거부한다(실수로 전체 행을 바꾸는 사고 방지).
+-- EMP_COPY는 CTAS라 PK/인덱스가 없어 WHERE EMP_ID = '...' 조차 "키 아님"으로 막힌다.
+SELECT @@SESSION.sql_safe_updates;   -- 1 = 켜짐, 0 = 꺼짐
+
+-- 실습 동안만 해제 (현재 커넥션에서만 유효, 재접속하면 Workbench 기본값으로 복귀)
+SET SESSION sql_safe_updates = 0;
+
 
 -- ================================
 -- 2. INSERT INTO - 전체 컬럼
@@ -122,3 +131,10 @@ SELECT COUNT(*) FROM EMP_COPY;   -- 23
 
 -- DELETE(DML, 커밋 전 ROLLBACK 가능) vs TRUNCATE/DROP(DDL, 자동 커밋)은
 -- DDL 챕터의 "DROP TABLE vs TRUNCATE TABLE" 절 참고
+
+
+-- ================================
+-- 11. 실습 마무리 - 안전장치 복구
+-- ================================
+-- 실습하며 해제했던 Safe Updates 모드를 다시 켠다.
+SET SESSION sql_safe_updates = 1;
