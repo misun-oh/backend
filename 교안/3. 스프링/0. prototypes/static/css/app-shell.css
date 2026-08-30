@@ -1,0 +1,71 @@
+/* =============================================================================
+ * app-shell.css  —  프로토타입 공통 화면 골격
+ * -----------------------------------------------------------------------------
+ * basic.css / component.css 의 토큰·컴포넌트를 그대로 쓰고,
+ * 여러 프로토타입(hr · book · shopping-mall · instagram)이 공유하는
+ * "페이지 레이아웃" 조각만 모았습니다.
+ *   - app-shell.js 가 주입하는 헤더/푸터/로그인 모달
+ *   - 페이지 제목줄(.page-head), 도구모음(.toolbar), 표 감싸기(.table-wrap)
+ *   - 폼 2열 그리드(.form-grid), 사용자 칩(.user-chip)
+ * 각 앱 고유 스타일은 static/css/<앱>.css 에 둡니다.
+ * ========================================================================== */
+
+/* 본문 영역 */
+.app-main { padding-block: var(--space-6) var(--space-8); }
+
+/* 페이지 제목줄 : <div class="page-head"><div><h1>..</h1><p>..</p></div><버튼/></div> */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-5);
+}
+.page-head h1 { font-size: var(--text-2xl); }
+.page-head p { color: var(--color-text-secondary); margin-top: var(--space-1); }
+
+/* 검색/필터 도구모음 */
+.toolbar {
+  display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center;
+  margin-bottom: var(--space-4);
+}
+.toolbar .spacer { flex: 1; }
+
+/* 넓은 표를 감싸 가로 스크롤 + 둥근 모서리 유지 */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+}
+.table-wrap .table { border: 0; }
+.table-wrap .table th:first-child,
+.table-wrap .table td:first-child { padding-left: var(--space-5); }
+.table-wrap .table th:last-child,
+.table-wrap .table td:last-child { padding-right: var(--space-5); }
+
+/* 폼 2열 그리드 : .field 를 나란히, .field--full 은 한 줄 전체 */
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4) var(--space-5); }
+.form-grid .field--full { grid-column: 1 / -1; }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* 헤더 우측 로그인 사용자 표시 */
+.user-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--color-text-secondary);
+}
+
+/* 목록 행 안의 작은 액션 링크 묶음 */
+.row-actions { display: flex; gap: var(--space-2); }
+.row-actions a { font-size: var(--text-sm); }
+
+/* 정의형 정보 테이블 : <table class="info-table"><tr><th>라벨</th><td>값</td></tr>... */
+.info-table { width: 100%; border-collapse: collapse; }
+.info-table th, .info-table td { text-align: left; padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+.info-table th { width: 160px; font-weight: 600; color: var(--color-text-secondary); font-size: var(--text-sm); }
+.info-table tr:last-child th, .info-table tr:last-child td { border-bottom: 0; }
+
+/* 별도 로그인 "페이지"가 필요할 때 (모달 대신) */
+.auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: var(--space-5); background: var(--color-bg-subtle); }
+.auth-card {
+  width: min(400px, 100%); background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border); border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md); padding: var(--space-7) var(--space-6);
+}

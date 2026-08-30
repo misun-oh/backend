@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>책숲 · 도서대여시스템</title>
+
+  <!-- 템플릿 스타일 & 스크립트 -->
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <script src="/js/component.js" defer></script>
+
+  <!--
+    이 파일은 basic.css / component.css / component.js 만으로 만든
+    "도서대여시스템" 화면 예시입니다. 스프링 교안에서 Thymeleaf 템플릿의
+    기준 디자인으로 사용합니다. (th:each, th:text 등을 이 마크업 위에 얹으면 됨)
+  -->
+  <style>
+    /* 이 페이지에서만 쓰는 소소한 스타일 (템플릿 아님) */
+    .book-cover {
+      display: grid; place-items: center; text-align: center;
+      padding: var(--space-4);
+      aspect-ratio: 3 / 4;
+      color: #fff; font-weight: 700; font-size: var(--text-lg);
+      letter-spacing: var(--tracking-normal);
+      background: linear-gradient(150deg, #5b8def, #23408e);
+    }
+    .book-cover--b { background: linear-gradient(150deg, #ff8a5b, #b23b6a); }
+    .book-cover--c { background: linear-gradient(150deg, #33b07a, #1c6b58); }
+    .book-cover--d { background: linear-gradient(150deg, #9b6bdf, #4b2d8e); }
+    .book-cover--e { background: linear-gradient(150deg, #f2b53b, #c2661c); }
+    .hero-slide {
+      display: grid; place-items: center; text-align: center; gap: var(--space-4);
+      min-height: 340px; padding: var(--space-8) var(--space-5);
+      background: var(--color-bg-subtle);
+    }
+    /* 라이트: 은은한 파스텔 그라데이션 (본문 텍스트는 어두운 색 유지) */
+    .hero-slide--1 { background: linear-gradient(160deg, #eaf1ff, #d7e3ff); color: #1d1d1f; }
+    .hero-slide--2 { background: linear-gradient(160deg, #ffeede, #ffdfce); color: #1d1d1f; }
+    .hero-slide--3 { background: linear-gradient(160deg, #e2f7ee, #cdeede); color: #1d1d1f; }
+    /* 다크: OS 다크 모드(수동 지정 없음) */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .hero-slide--1 { background: linear-gradient(160deg, #10233a, #0a1830); color: #f5f5f7; }
+      :root:not([data-theme="light"]) .hero-slide--2 { background: linear-gradient(160deg, #2a1c12, #21140c); color: #f5f5f7; }
+      :root:not([data-theme="light"]) .hero-slide--3 { background: linear-gradient(160deg, #10261a, #0a1c12); color: #f5f5f7; }
+    }
+    /* 다크: 토글로 수동 지정 */
+    :root[data-theme="dark"] .hero-slide--1 { background: linear-gradient(160deg, #10233a, #0a1830); color: #f5f5f7; }
+    :root[data-theme="dark"] .hero-slide--2 { background: linear-gradient(160deg, #2a1c12, #21140c); color: #f5f5f7; }
+    :root[data-theme="dark"] .hero-slide--3 { background: linear-gradient(160deg, #10261a, #0a1c12); color: #f5f5f7; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= 헤더 (frosted glass, sticky) ================= -->
+  <header class="site-header">
+    <div class="site-header__inner container container--wide">
+      <a class="site-header__brand" href="#">📚 책숲</a>
+      <nav class="site-nav hide-mobile" aria-label="주요 메뉴">
+        <a href="#new" aria-current="page">신간</a>
+        <a href="#catalog">전체 도서</a>
+        <a href="#faq">이용 안내</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="btn btn--ghost btn--sm" data-theme-toggle aria-pressed="false" aria-label="다크 모드 전환">🌓</button>
+      <a class="btn btn--primary btn--sm" href="#">로그인</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= Hero 캐러셀 ================= -->
+    <section class="section section--tight">
+      <div class="container container--wide">
+        <div class="carousel" data-carousel data-autoplay="5000" data-loop>
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide">
+                <div class="hero-slide hero-slide--1">
+                  <p class="eyebrow">이 달의 추천</p>
+                  <h2 class="display text-balance">좋은 책은<br>가까이 있어야 합니다</h2>
+                  <p class="lead">회원이라면 누구나 2주간 무료 대여</p>
+                  <a class="btn btn--primary btn--lg" href="#catalog">도서 둘러보기</a>
+                </div>
+              </li>
+              <li class="carousel__slide">
+                <div class="hero-slide hero-slide--2">
+                  <p class="eyebrow">신간 입고</p>
+                  <h2 class="display text-balance">이번 주 새 책<br>32권 도착</h2>
+                  <p class="lead">개발·디자인·에세이까지</p>
+                  <a class="btn btn--primary btn--lg" href="#new">신간 보기</a>
+                </div>
+              </li>
+              <li class="carousel__slide">
+                <div class="hero-slide hero-slide--3">
+                  <p class="eyebrow">독서 모임</p>
+                  <h2 class="display text-balance">함께 읽으면<br>끝까지 읽습니다</h2>
+                  <p class="lead">매월 첫째 주 토요일</p>
+                  <a class="btn btn--secondary btn--lg" href="#">모임 신청</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <button class="carousel__arrow carousel__arrow--prev" aria-label="이전 슬라이드">‹</button>
+          <button class="carousel__arrow carousel__arrow--next" aria-label="다음 슬라이드">›</button>
+          <div class="carousel__dots" aria-label="슬라이드 선택"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 필터 바 ================= -->
+    <section class="section--tight" id="catalog">
+      <div class="container container--wide">
+        <div class="row row--between">
+          <div class="row">
+            <div class="input-group">
+              <input class="input" type="search" placeholder="책 제목, 저자 검색" aria-label="검색어" style="min-width: 260px">
+              <button class="btn btn--secondary">검색</button>
+            </div>
+            <label class="switch">
+              <input type="checkbox">
+              <span class="switch__track"><span class="switch__thumb"></span></span>
+              <span class="switch__label">대여 가능만</span>
+            </label>
+          </div>
+
+          <div class="dropdown" data-dropdown>
+            <button class="btn btn--secondary" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+              정렬: <span data-dropdown-label>최신순</span> ▾
+            </button>
+            <div class="dropdown__menu" role="menu">
+              <button class="dropdown__item" type="button" role="menuitem" aria-current="true">최신순</button>
+              <button class="dropdown__item" type="button" role="menuitem">인기순</button>
+              <button class="dropdown__item" type="button" role="menuitem">평점순</button>
+              <button class="dropdown__item" type="button" role="menuitem">제목순</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 도서 그리드 ================= -->
+    <section class="section" id="new">
+      <div class="container container--wide">
+        <p class="eyebrow">신간</p>
+        <h2 class="mb-4">이번 주 들어온 책</h2>
+
+        <div class="grid grid--cards">
+          <!-- 카드 1 -->
+          <article class="card card--hover">
+            <div class="card__media book-cover">클린 코드</div>
+            <div class="card__body">
+              <span class="badge badge--success badge--dot">대여가능</span>
+              <h3 class="card__title">클린 코드</h3>
+              <p class="card__meta">로버트 C. 마틴</p>
+              <p class="row" style="--gap: var(--space-2)">
+                <span class="rating" style="--rate: 4.5" aria-label="평점 4.5점"></span>
+                <span class="muted" style="font-size: var(--text-sm)">4.5 (128)</span>
+              </p>
+              <div class="card__footer">
+                <button class="btn btn--primary btn--block" data-modal-open="book-detail">상세 보기</button>
+              </div>
+            </div>
+          </article>
+          <!-- 카드 2 -->
+          <article class="card card--hover">
+            <div class="card__media book-cover book-cover--b">모던 자바<br>인 액션</div>
+            <div class="card__body">
+              <span class="badge badge--warning badge--dot">대여중</span>
+              <h3 class="card__title">모던 자바 인 액션</h3>
+              <p class="card__meta">라울-게이브리얼 우르마 외</p>
+              <p class="row" style="--gap: var(--space-2)">
+                <span class="rating" style="--rate: 4" aria-label="평점 4점"></span>
+                <span class="muted" style="font-size: var(--text-sm)">4.0 (86)</span>
+              </p>
+              <div class="card__footer">
+                <button class="btn btn--secondary btn--block" disabled>예약하기</button>
+              </div>
+            </div>
+          </article>
+          <!-- 카드 3 -->
+          <article class="card card--hover">
+            <div class="card__media book-cover book-cover--c">오브젝트</div>
+            <div class="card__body">
+              <span class="badge badge--success badge--dot">대여가능</span>
+              <h3 class="card__title">오브젝트</h3>
+              <p class="card__meta">조영호</p>
+              <p class="row" style="--gap: var(--space-2)">
+                <span class="rating" style="--rate: 5" aria-label="평점 5점"></span>
+                <span class="muted" style="font-size: var(--text-sm)">5.0 (54)</span>
+              </p>
+              <div class="card__footer">
+                <button class="btn btn--primary btn--block" data-modal-open="book-detail">상세 보기</button>
+              </div>
+            </div>
+          </article>
+          <!-- 카드 4 -->
+          <article class="card card--hover">
+            <div class="card__media book-cover book-cover--d">HTTP<br>완벽 가이드</div>
+            <div class="card__body">
+              <span class="badge badge--success badge--dot">대여가능</span>
+              <h3 class="card__title">HTTP 완벽 가이드</h3>
+              <p class="card__meta">데이빗 고울리 외</p>
+              <p class="row" style="--gap: var(--space-2)">
+                <span class="rating" style="--rate: 3.5" aria-label="평점 3.5점"></span>
+                <span class="muted" style="font-size: var(--text-sm)">3.5 (41)</span>
+              </p>
+              <div class="card__footer">
+                <button class="btn btn--primary btn--block" data-modal-open="book-detail">상세 보기</button>
+              </div>
+            </div>
+          </article>
+          <!-- 카드 5 -->
+          <article class="card card--hover">
+            <div class="card__media book-cover book-cover--e">함께 자라기</div>
+            <div class="card__body">
+              <span class="badge badge--success badge--dot">대여가능</span>
+              <h3 class="card__title">함께 자라기</h3>
+              <p class="card__meta">김창준</p>
+              <p class="row" style="--gap: var(--space-2)">
+                <span class="rating" style="--rate: 4.5" aria-label="평점 4.5점"></span>
+                <span class="muted" style="font-size: var(--text-sm)">4.5 (73)</span>
+              </p>
+              <div class="card__footer">
+                <button class="btn btn--primary btn--block" data-modal-open="book-detail">상세 보기</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <nav class="pagination mt-8" aria-label="페이지">
+          <a class="pagination__item" href="#" rel="prev" aria-label="이전">‹</a>
+          <a class="pagination__item" href="#" aria-current="page">1</a>
+          <a class="pagination__item" href="#">2</a>
+          <a class="pagination__item" href="#">3</a>
+          <a class="pagination__item" href="#" rel="next" aria-label="다음">›</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- ================= 이용 안내 (아코디언 + 탭) ================= -->
+    <section class="section section--subtle" id="faq">
+      <div class="container">
+        <p class="eyebrow">이용 안내</p>
+        <h2 class="mb-4">자주 묻는 질문</h2>
+
+        <div class="accordion" data-accordion>
+          <details class="accordion__item" open>
+            <summary class="accordion__header">대여 기간은 얼마인가요?<span class="accordion__icon">+</span></summary>
+            <div class="accordion__body"><p>기본 대여 기간은 <strong>14일</strong>이며, 반납일 전 1회에 한해 7일 연장할 수 있습니다.</p></div>
+          </details>
+          <details class="accordion__item">
+            <summary class="accordion__header">한 번에 몇 권까지 빌릴 수 있나요?<span class="accordion__icon">+</span></summary>
+            <div class="accordion__body"><p>일반 회원은 최대 5권, 독서 모임 회원은 최대 10권까지 동시에 대여할 수 있습니다.</p></div>
+          </details>
+          <details class="accordion__item">
+            <summary class="accordion__header">연체하면 어떻게 되나요?<span class="accordion__icon">+</span></summary>
+            <div class="accordion__body"><p>연체 1일당 대여 가능 권수가 1권씩 줄어들며, 모든 도서를 반납하면 즉시 복구됩니다.</p></div>
+          </details>
+        </div>
+
+        <div class="tabs mt-8" data-tabs>
+          <div class="tabs__list" role="tablist" aria-label="안내 항목">
+            <button class="tabs__tab" role="tab" id="tab-guide" aria-controls="panel-guide" aria-selected="true">대여 방법</button>
+            <button class="tabs__tab" role="tab" id="tab-return" aria-controls="panel-return" aria-selected="false">반납 방법</button>
+            <button class="tabs__tab" role="tab" id="tab-member" aria-controls="panel-member" aria-selected="false">회원 등급</button>
+          </div>
+          <div class="tabs__panel" role="tabpanel" id="panel-guide" aria-labelledby="tab-guide">
+            <p>도서 상세 페이지에서 <strong>대여하기</strong> 버튼을 누르면 신청이 완료됩니다. 신청한 책은 3일 안에 1층 데스크에서 수령해 주세요.</p>
+          </div>
+          <div class="tabs__panel" role="tabpanel" id="panel-return" aria-labelledby="tab-return" hidden>
+            <p>1층 무인 반납함에 넣거나 데스크에 반납합니다. 반납 처리는 최대 1시간이 걸릴 수 있습니다.</p>
+          </div>
+          <div class="tabs__panel" role="tabpanel" id="panel-member" aria-labelledby="tab-member" hidden>
+            <p>일반 · 독서모임 · 후원 3개 등급이 있으며, 등급에 따라 동시 대여 권수와 예약 우선순위가 달라집니다.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= 푸터 ================= -->
+  <footer class="site-footer">
+    <div class="container container--wide row row--between">
+      <p>© 2026 책숲 도서대여. 학습용 디자인 템플릿.</p>
+      <nav class="row" style="--gap: var(--space-4)">
+        <a href="#">이용약관</a>
+        <a href="#">개인정보처리방침</a>
+        <a href="#">문의</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ================= 모달 (도서 상세) ================= -->
+  <div class="modal" id="book-detail" data-modal hidden>
+    <div class="modal__overlay" data-modal-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="book-detail-title">
+      <button class="modal__close" type="button" data-modal-close aria-label="닫기">×</button>
+      <p class="eyebrow">도서 상세</p>
+      <h3 class="modal__title" id="book-detail-title">클린 코드</h3>
+      <div class="modal__body stack" style="--gap: var(--space-3)">
+        <p class="row" style="--gap: var(--space-2)">
+          <span class="rating" style="--rate: 4.5" aria-label="평점 4.5점"></span>
+          <span class="muted" style="font-size: var(--text-sm)">4.5 · 리뷰 128개</span>
+        </p>
+        <p>애자일 소프트웨어 장인 정신. 좋은 코드와 나쁜 코드를 구분하는 법, 나쁜 코드를 좋은 코드로 바꾸는 실전 기법을 다룹니다.</p>
+        <div class="row" style="--gap: var(--space-4)">
+          <span class="badge badge--success badge--dot">대여가능</span>
+          <span class="muted" style="font-size: var(--text-sm)">청구기호 005.1 마861ㅋ</span>
+        </div>
+        <div class="field">
+          <span class="label">이 책을 평가해 주세요</span>
+          <div class="rating-input" data-rating-input data-name="myScore" data-value="0"></div>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" data-modal-close>닫기</button>
+        <button class="btn btn--primary" id="rent-btn">대여하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 이 페이지 데모용 스크립트 (템플릿 아님) — 토스트 사용 예시
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("rent-btn").addEventListener("click", function () {
+        UI.modal.close("book-detail");
+        UI.toast("‘클린 코드’ 대여가 완료되었습니다. 3일 안에 수령해 주세요.", { type: "success" });
+      });
+      document.querySelector("[data-rating-input]").addEventListener("rating:change", function (e) {
+        UI.toast(e.detail.value + "점을 남겼습니다. 감사합니다!");
+      });
+    });
+  </script>
+</body>
+</html>

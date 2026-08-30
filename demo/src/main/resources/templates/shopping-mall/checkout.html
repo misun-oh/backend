@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>주문 · 사내몰</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/shopping-mall.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="🛍️ 사내몰" data-shell-key="shop" data-shell-home="index.html"
+      data-shell-active="cart"
+      data-shell-nav='[{"href":"index.html","key":"home","label":"홈"},{"href":"cart.html","key":"cart","label":"장바구니 (2)"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container container--wide">
+    <nav class="breadcrumb mb-4" aria-label="현재 위치">
+      <a href="cart.html">장바구니</a><span aria-current="page">주문/결제</span>
+    </nav>
+    <div class="page-head"><div><h1>주문/결제</h1></div></div>
+
+    <form class="checkout-grid" data-order-form>
+      <div class="stack" style="--gap: var(--space-6)">
+        <section class="card" style="padding: var(--space-5)">
+          <h3 class="mb-4">배송지</h3>
+          <div class="form-grid">
+            <div class="field"><label class="label" for="c-name">받는 사람 *</label><input class="input" id="c-name" value="박지민" required></div>
+            <div class="field"><label class="label" for="c-tel">연락처 *</label><input class="input" id="c-tel" value="010-3665-4875" required></div>
+            <div class="field field--full"><label class="label" for="c-addr">주소 *</label><input class="input" id="c-addr" placeholder="도로명 주소" required></div>
+            <div class="field field--full"><label class="label" for="c-addr2">상세 주소</label><input class="input" id="c-addr2" placeholder="동/호수"></div>
+            <div class="field field--full">
+              <label class="label" for="c-memo">배송 메모</label>
+              <select class="select" id="c-memo">
+                <option>부재 시 경비실에 맡겨 주세요</option>
+                <option>배송 전 연락 바랍니다</option>
+                <option>사내 우편함으로 보내 주세요</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" style="padding: var(--space-5)">
+          <h3 class="mb-4">결제 수단</h3>
+          <div class="stack" style="--gap: var(--space-3)">
+            <label class="check"><input type="radio" name="pay" checked><span>복지 포인트 (잔액 120,000P)</span></label>
+            <label class="check"><input type="radio" name="pay"><span>급여 공제</span></label>
+            <label class="check"><input type="radio" name="pay"><span>개인 카드</span></label>
+          </div>
+        </section>
+
+        <label class="check"><input type="checkbox" required><span>주문 내용을 확인했으며 결제에 동의합니다. *</span></label>
+      </div>
+
+      <aside class="card summary" style="padding: var(--space-5)">
+        <h3 class="mb-4">최종 결제</h3>
+        <div class="summary__row"><span>무선 블루투스 스피커</span><span>42,000원</span></div>
+        <div class="summary__row"><span>유기농 드립백 커피 ×2</span><span>28,500원</span></div>
+        <div class="summary__row"><span>임직원 할인</span><span style="color: var(--color-danger)">−16,800원</span></div>
+        <div class="summary__row"><span>배송비</span><span>무료</span></div>
+        <div class="summary__total"><span>결제 금액</span><span>53,700원</span></div>
+        <button class="btn btn--primary btn--block btn--lg mt-4" type="submit">53,700원 결제하기</button>
+      </aside>
+    </form>
+  </main>
+
+  <footer data-app-footer></footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelector("[data-order-form]").addEventListener("submit", function (e) {
+        e.preventDefault();
+        UI.toast("주문이 완료되었습니다. 주문번호 20260828-0012", { type: "success", duration: 4000 });
+        setTimeout(function () { location.href = "index.html"; }, 1600);
+      });
+    });
+  </script>
+</body>
+</html>

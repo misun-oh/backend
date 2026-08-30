@@ -1,0 +1,45 @@
+/* =============================================================================
+ * book.css  —  사내 도서대여 프로토타입 전용 스타일
+ * 공통 골격은 app-shell.css , 컴포넌트는 component.css
+ * ========================================================================== */
+
+/* 표지 (이미지 대신 그라데이션 + 제목) */
+.cover {
+  display: grid; place-items: center; text-align: center;
+  aspect-ratio: 3 / 4; padding: var(--space-4);
+  color: #fff; font-weight: 700; font-size: var(--text-lg);
+  letter-spacing: var(--tracking-normal);
+  background: linear-gradient(150deg, #5b8def, #23408e);
+}
+.cover--b { background: linear-gradient(150deg, #ff8a5b, #b23b6a); }
+.cover--c { background: linear-gradient(150deg, #33b07a, #1c6b58); }
+.cover--d { background: linear-gradient(150deg, #9b6bdf, #4b2d8e); }
+.cover--e { background: linear-gradient(150deg, #f2b53b, #c2661c); }
+.cover--f { background: linear-gradient(150deg, #4b5563, #1f2937); }
+.cover--lg { aspect-ratio: 3 / 4; max-width: 260px; border-radius: var(--radius-lg); }
+
+/* Hero 슬라이드 */
+.hero-slide {
+  display: grid; place-items: center; text-align: center; gap: var(--space-3);
+  min-height: 300px; padding: var(--space-8) var(--space-5);
+  color: #1d1d1f;
+  background: linear-gradient(160deg, #eaf1ff, #d7e3ff);
+}
+:root[data-theme="dark"] .hero-slide { color: #f5f5f7; background: linear-gradient(160deg, #10233a, #0a1830); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hero-slide { color: #f5f5f7; background: linear-gradient(160deg, #10233a, #0a1830); }
+}
+
+/* 리뷰 한 건 */
+.review { padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border); }
+.review:last-child { border-bottom: 0; }
+.review__head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.review__name { font-weight: 600; font-size: var(--text-sm); }
+.review__date { color: var(--color-text-tertiary); font-size: var(--text-xs); margin-left: auto; }
+
+/* 상세 화면 레이아웃 : 표지 | 정보 */
+.detail-grid { display: grid; grid-template-columns: 260px 1fr; gap: var(--space-6); align-items: start; }
+@media (max-width: 720px) { .detail-grid { grid-template-columns: 1fr; justify-items: center; } }
+
+/* D-day 배지 */
+.dday { font-variant-numeric: tabular-nums; }

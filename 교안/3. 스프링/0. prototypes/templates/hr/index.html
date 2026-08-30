@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>사원 목록 · 사원관리</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/hr.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="👔 사원관리" data-shell-key="hr" data-shell-home="index.html" data-shell-active="emp" data-shell-nav='[{"href":"index.html","key":"emp","label":"사원 목록"},{"href":"depts.html","key":"dept","label":"부서"},{"href":"dashboard.html","key":"dashboard","label":"대시보드"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head">
+      <div>
+        <h1>사원 목록</h1>
+        <p>전체 21명 · 재직 20명</p>
+      </div>
+      <a class="btn btn--primary" href="emp-form.html">+ 사원 등록</a>
+    </div>
+
+    <!-- 검색/필터 도구 -->
+    <div class="toolbar">
+      <div class="input-group">
+        <input class="input" type="search" placeholder="이름 · 사번 · 이메일" aria-label="검색어" style="min-width: 240px">
+        <button class="btn btn--secondary" type="button">검색</button>
+      </div>
+      <select class="select" aria-label="부서" style="width: 150px">
+        <option value="">전체 부서</option>
+        <option>인사관리부</option><option>회계관리부</option><option>해외영업1부</option>
+        <option>기술지원부</option><option>총무부</option>
+      </select>
+      <label class="switch">
+        <input type="checkbox" checked>
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span class="switch__label">재직자만</span>
+      </label>
+      <span class="spacer"></span>
+      <div class="dropdown" data-dropdown>
+        <button class="btn btn--secondary" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+          정렬: <span data-dropdown-label>입사일순</span> ▾
+        </button>
+        <div class="dropdown__menu" role="menu">
+          <button class="dropdown__item" type="button" role="menuitem" aria-current="true">입사일순</button>
+          <button class="dropdown__item" type="button" role="menuitem">이름순</button>
+          <button class="dropdown__item" type="button" role="menuitem">급여순</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 목록 테이블 -->
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>사번</th><th>이름</th><th>부서</th><th>직급</th><th>입사일</th><th>상태</th><th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>200</td>
+            <td><a href="emp-detail.html">곽상혁</a></td>
+            <td>총무부</td><td>대표</td><td>2013-03-02</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>201</td>
+            <td><a href="emp-detail.html">권진우</a></td>
+            <td>총무부</td><td>부사장</td><td>2013-09-15</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>205</td>
+            <td><a href="emp-detail.html">박지민</a></td>
+            <td>해외영업1부</td><td>부장</td><td>2015-05-20</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>206</td>
+            <td><a href="emp-detail.html">염성원</a></td>
+            <td>해외영업1부</td><td>과장</td><td>2017-06-07</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>210</td>
+            <td><a href="emp-detail.html">이광렬</a></td>
+            <td>기술지원부</td><td>대리</td><td>2020-03-12</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>212</td>
+            <td><a href="emp-detail.html">오미자</a></td>
+            <td>기술지원부</td><td>사원</td><td>2021-11-28</td>
+            <td><span class="badge badge--danger badge--dot">퇴사</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>213</td>
+            <td><a href="emp-detail.html">이다현</a></td>
+            <td>인사관리부</td><td>대리</td><td>2021-02-03</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+          <tr>
+            <td>216</td>
+            <td><a href="emp-detail.html">박홍주</a></td>
+            <td>회계관리부</td><td>차장</td><td>2015-11-09</td>
+            <td><span class="badge badge--success badge--dot">재직</span></td>
+            <td class="row-actions"><a href="emp-detail.html">상세</a><a href="emp-form.html">수정</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="pagination mt-6" aria-label="페이지">
+      <a class="pagination__item" href="#" aria-label="이전">‹</a>
+      <a class="pagination__item" href="#" aria-current="page">1</a>
+      <a class="pagination__item" href="#">2</a>
+      <a class="pagination__item" href="#">3</a>
+      <a class="pagination__item" href="#" aria-label="다음">›</a>
+    </nav>
+  </main>
+
+  <footer data-app-footer></footer>
+</body>
+</html>

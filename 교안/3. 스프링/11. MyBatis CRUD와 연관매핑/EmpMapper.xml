@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Day 11 : EmpMapper 전체 (조회 + CRUD + 조인 매핑) -->
+<mapper namespace="com.example.hr.mapper.EmpMapper">
+
+  <sql id="cols">
+    EMP_ID, EMP_NAME, EMAIL, PHONE, DEPT_ID, JOB_CODE, SALARY, HIRE_DATE,
+    (CASE WHEN ENT_YN = 'N' THEN 1 ELSE 0 END) AS ACTIVE
+  </sql>
+
+  <!-- ===== 단건/전체 ===== -->
+  <select id="findAll" resultType="Emp">
+    SELECT <include refid="cols"/> FROM EMP ORDER BY EMP_ID
+  </select>
+
+  <select id="findById" resultType="Emp">
+    SELECT <include refid="cols"/> FROM EMP WHERE EMP_ID = #{empId}
+  </select>
+
+  <!-- ===== CRUD ===== -->
+  <insert id="insert">
+    INSERT INTO EMP (EMP_ID, EMP_NAME, EMAIL, PHONE, DEPT_ID, JOB_CODE, SALARY, HIRE_DATE, ENT_YN)
+    VALUES (#{empId}, #{empName}, #{email}, #{phone}, #{deptId}, #{jobCode}, #{salary}, #{hireDate}, 'N')
+  </insert>
+
+  <update id="update">
+    UPDATE EMP
+    SET EMP_NAME = #{empName}, EMAIL = #{email}, DEPT_ID = #{deptId},
+        SALARY = #{salary}, HIRE_DATE = #{hireDate}
+    WHERE EMP_ID = #{empId}
+  </update>
+
+  <update id="updateSalary">
+    UPDATE EMP SET SALARY = #{salary} WHERE EMP_ID = #{empId}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM EMP WHERE EMP_ID = #{empId}
+  </delete>
+
+  <!-- ===== 목록 (조인 → Emp 읽기 필드 deptName·jobName) ===== -->
+  <select id="findList" resultType="Emp">
+    SELECT e.EMP_ID, e.EMP_NAME, e.EMAIL, e.PHONE, e.DEPT_ID, e.JOB_CODE,
+           e.SALARY, e.HIRE_DATE,
+           d.DEPT_TITLE AS deptName,
+           j.JOB_NAME   AS jobName,
+           (CASE WHEN e.ENT_YN = 'N' THEN 1 ELSE 0 END) AS ACTIVE
+    FROM EMP e
+    LEFT JOIN DEPT d ON e.DEPT_ID = d.DEPT_ID
+    LEFT JOIN JOB  j ON e.JOB_CODE = j.JOB_CODE
+    ORDER BY e.EMP_ID
+  </select>
+
+  <!-- ===== 상세 (사원 + 부서 객체) ===== -->
+  <resultMap id="empWithDeptMap" type="Emp">
+    <id     property="empId"    column="EMP_ID"/>
+    <result property="empName"  column="EMP_NAME"/>
+    <result property="email"    column="EMAIL"/>
+    <result property="deptId"   column="DEPT_ID"/>
+    <result property="jobCode"  column="JOB_CODE"/>
+    <result property="salary"   column="SALARY"/>
+    <result property="hireDate" column="HIRE_DATE"/>
+    <result property="active"   column="ACTIVE"/>
+    <association property="dept" javaType="com.example.hr.domain.Dept">
+      <id     property="deptId"   column="D_DEPT_ID"/>
+      <result property="deptName" column="DEPT_TITLE"/>
+      <result property="location" column="LOCATION_ID"/>
+    </association>
+  </resultMap>
+
+  <select id="findByIdWithDept" resultMap="empWithDeptMap">
+    SELECT e.EMP_ID, e.EMP_NAME, e.EMAIL, e.DEPT_ID, e.JOB_CODE, e.SALARY, e.HIRE_DATE,
+           (CASE WHEN e.ENT_YN = 'N' THEN 1 ELSE 0 END) AS ACTIVE,
+           d.DEPT_ID AS D_DEPT_ID, d.DEPT_TITLE, d.LOCATION_ID
+    FROM EMP e
+    LEFT JOIN DEPT d ON e.DEPT_ID = d.DEPT_ID
+    WHERE e.EMP_ID = #{empId}
+  </select>
+</mapper>

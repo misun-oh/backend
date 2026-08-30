@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>내 대여 · 사내도서관</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/book.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="📚 사내도서관" data-shell-key="library" data-shell-home="index.html"
+      data-shell-active="mine"
+      data-shell-nav='[{"href":"index.html","key":"catalog","label":"도서"},{"href":"my-rentals.html","key":"mine","label":"내 대여"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head">
+      <div><h1>내 대여</h1><p>대여중 2권 · 이번 달 반납 3권</p></div>
+    </div>
+
+    <div class="tabs" data-tabs>
+      <div class="tabs__list" role="tablist" aria-label="대여 상태">
+        <button type="button" class="tabs__tab" role="tab" id="t-active" aria-controls="p-active" aria-selected="true">대여중 (2)</button>
+        <button type="button" class="tabs__tab" role="tab" id="t-done" aria-controls="p-done" aria-selected="false">반납 완료</button>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-active" aria-labelledby="t-active">
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>도서</th><th>대여일</th><th>반납 예정</th><th>남은 기간</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="book-detail.html">클린 코드</a></td>
+                <td>2026-08-16</td><td>2026-08-30</td>
+                <td><span class="badge badge--success dday">D-2</span></td>
+                <td class="row-actions"><button class="btn btn--secondary btn--sm" type="button" data-extend>연장</button></td>
+              </tr>
+              <tr>
+                <td><a href="book-detail.html">오브젝트</a></td>
+                <td>2026-08-05</td><td>2026-08-19</td>
+                <td><span class="badge badge--danger dday">D+9 연체</span></td>
+                <td class="row-actions"><button class="btn btn--secondary btn--sm" type="button" disabled>연장 불가</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="form-hint mt-4">연체 중에는 새 도서를 대여할 수 없습니다. 반납 시 즉시 해제됩니다.</p>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-done" aria-labelledby="t-done" hidden>
+        <div class="table-wrap">
+          <table class="table table--striped">
+            <thead><tr><th>도서</th><th>대여일</th><th>반납일</th><th>내 평점</th></tr></thead>
+            <tbody>
+              <tr><td>함께 자라기</td><td>2026-07-01</td><td>2026-07-13</td><td><span class="rating" style="--rate: 5; --size: 0.9em"></span></td></tr>
+              <tr><td>모던 자바 인 액션</td><td>2026-06-10</td><td>2026-06-24</td><td><span class="rating" style="--rate: 4; --size: 0.9em"></span></td></tr>
+              <tr><td>HTTP 완벽 가이드</td><td>2026-05-02</td><td>2026-05-15</td><td><span class="muted" style="font-size: var(--text-sm)">미평가</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer data-app-footer></footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll("[data-extend]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          UI.toast("7일 연장되었습니다. 반납 예정일: 2026-09-06", { type: "success" });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박지민 · 사원관리</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/hr.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="👔 사원관리" data-shell-key="hr" data-shell-home="index.html" data-shell-active="emp" data-shell-nav='[{"href":"index.html","key":"emp","label":"사원 목록"},{"href":"depts.html","key":"dept","label":"부서"},{"href":"dashboard.html","key":"dashboard","label":"대시보드"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container">
+    <nav class="breadcrumb mb-4" aria-label="현재 위치">
+      <a href="index.html">사원 목록</a>
+      <span aria-current="page">박지민</span>
+    </nav>
+
+    <!-- 프로필 -->
+    <div class="card" style="padding: var(--space-6)">
+      <div class="profile">
+        <span class="avatar">박</span>
+        <div class="spacer">
+          <p class="profile__name">박지민 <span class="badge badge--success badge--dot">재직</span></p>
+          <p class="profile__sub">해외영업1부 · 부장 · 사번 205</p>
+        </div>
+        <div class="row" style="--gap: var(--space-2)">
+          <a class="btn btn--secondary" href="emp-form.html">수정</a>
+          <button class="btn btn--danger" type="button" data-modal-open="delete-modal">삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세 탭 -->
+    <div class="tabs mt-6" data-tabs>
+      <div class="tabs__list" role="tablist" aria-label="사원 정보">
+        <button type="button" class="tabs__tab" role="tab" id="t-basic" aria-controls="p-basic" aria-selected="true">기본 정보</button>
+        <button type="button" class="tabs__tab" role="tab" id="t-pay" aria-controls="p-pay" aria-selected="false">급여</button>
+        <button type="button" class="tabs__tab" role="tab" id="t-org" aria-controls="p-org" aria-selected="false">조직</button>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-basic" aria-labelledby="t-basic">
+        <table class="info-table">
+          <tr><th>사번</th><td>205</td></tr>
+          <tr><th>이름</th><td>박지민</td></tr>
+          <tr><th>이메일</th><td>park_jm@company.com</td></tr>
+          <tr><th>전화</th><td>010-3665-4875</td></tr>
+          <tr><th>입사일</th><td>2015-05-20 (근속 11년)</td></tr>
+          <tr><th>재직 여부</th><td><span class="badge badge--success">재직</span></td></tr>
+        </table>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-pay" aria-labelledby="t-pay" hidden>
+        <table class="info-table">
+          <tr><th>기본급(월)</th><td>3,500,000원</td></tr>
+          <tr><th>보너스율</th><td>15%</td></tr>
+          <tr><th>예상 연봉</th><td>48,300,000원 <span class="muted">(기본급 × 12 + 보너스)</span></td></tr>
+          <tr><th>급여 등급</th><td>S4 (3,000,000 ~ 3,999,999)</td></tr>
+        </table>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-org" aria-labelledby="t-org" hidden>
+        <table class="info-table">
+          <tr><th>부서</th><td>해외영업1부 (D5) · 근무지 일본</td></tr>
+          <tr><th>직급</th><td>부장 (J3)</td></tr>
+          <tr><th>관리자</th><td><a href="emp-detail.html">곽상혁 (대표)</a></td></tr>
+          <tr>
+            <th>부하 직원</th>
+            <td>
+              <div class="stack" style="--gap: var(--space-1)">
+                <a href="emp-detail.html">염성원 · 과장</a>
+                <a href="emp-detail.html">유제영 · 과장</a>
+                <a href="emp-detail.html">윤정주 · 과장</a>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer data-app-footer></footer>
+
+  <!-- 삭제 확인 모달 -->
+  <div class="modal" id="delete-modal" data-modal hidden>
+    <div class="modal__overlay" data-modal-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="delete-modal-title" style="width: min(420px, 100%)">
+      <button class="modal__close" type="button" data-modal-close aria-label="닫기">×</button>
+      <h3 class="modal__title" id="delete-modal-title">사원 삭제</h3>
+      <div class="modal__body">
+        <p><strong>박지민(205)</strong> 사원을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.</p>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--secondary" type="button" data-modal-close>취소</button>
+        <button class="btn btn--danger" type="button" id="confirm-delete">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("confirm-delete").addEventListener("click", function () {
+        UI.modal.close("delete-modal");
+        UI.toast("박지민(205) 사원이 삭제되었습니다.", { type: "danger" });
+        setTimeout(function () { location.href = "index.html"; }, 1200);
+      });
+    });
+  </script>
+</body>
+</html>

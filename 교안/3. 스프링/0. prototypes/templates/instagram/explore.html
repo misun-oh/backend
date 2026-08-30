@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>탐색 · 임스타그램</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/instagram.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="📷 임스타그램" data-shell-key="imstagram" data-shell-home="index.html"
+      data-shell-active="explore"
+      data-shell-nav='[{"href":"index.html","key":"home","label":"홈"},{"href":"explore.html","key":"explore","label":"탐색"},{"href":"profile.html","key":"profile","label":"내 프로필"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container">
+    <div class="feed" style="max-width: 720px">
+      <div class="input-group" style="margin-bottom: var(--space-5)">
+        <input class="input" type="search" placeholder="계정 · 해시태그 검색" aria-label="검색어">
+        <button class="btn btn--secondary" type="button">검색</button>
+      </div>
+
+      <div class="photo-grid">
+        <a href="#" class="photo"></a>
+        <a href="#" class="photo photo--b"></a>
+        <a href="#" class="photo photo--c"></a>
+        <a href="#" class="photo photo--d"></a>
+        <a href="#" class="photo photo--e"></a>
+        <a href="#" class="photo photo--f"></a>
+        <a href="#" class="photo photo--g"></a>
+        <a href="#" class="photo photo--h"></a>
+        <a href="#" class="photo"></a>
+        <a href="#" class="photo photo--c"></a>
+        <a href="#" class="photo photo--e"></a>
+        <a href="#" class="photo photo--b"></a>
+        <a href="#" class="photo photo--d"></a>
+        <a href="#" class="photo photo--f"></a>
+        <a href="#" class="photo photo--g"></a>
+      </div>
+    </div>
+  </main>
+
+  <footer data-app-footer></footer>
+</body>
+</html>

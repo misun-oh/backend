@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- Day 9 : src/main/resources/mapper/EmpMapper.xml
+     namespace = 매퍼 인터페이스 FQCN, <select id> = 메서드명 -->
+<mapper namespace="com.example.hr.mapper.EmpMapper">
+
+  <!-- 공통 컬럼. ENT_YN='N'(재직) → ACTIVE=1 로 매핑 -->
+  <sql id="cols">
+    EMP_ID, EMP_NAME, EMAIL, DEPT_ID, JOB_CODE, SALARY, HIRE_DATE,
+    (CASE WHEN ENT_YN = 'N' THEN 1 ELSE 0 END) AS ACTIVE
+  </sql>
+
+  <select id="findAll" resultType="Emp">
+    SELECT <include refid="cols"/>
+    FROM EMP
+    ORDER BY EMP_ID
+  </select>
+
+  <select id="findById" resultType="Emp">
+    SELECT <include refid="cols"/>
+    FROM EMP
+    WHERE EMP_ID = #{empId}
+  </select>
+
+  <!-- LIKE 검색은 CONCAT + #{} (문자열 결합도 파라미터 바인딩으로) -->
+  <select id="findByNameLike" resultType="Emp">
+    SELECT <include refid="cols"/>
+    FROM EMP
+    WHERE EMP_NAME LIKE CONCAT('%', #{keyword}, '%')
+    ORDER BY EMP_ID
+  </select>
+</mapper>

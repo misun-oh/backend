@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>장바구니 · 사내몰</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/shopping-mall.css">
+  <script src="/js/component.js" defer></script>
+  <script src="/js/app-shell.js" defer></script>
+</head>
+<body data-shell-brand="🛍️ 사내몰" data-shell-key="shop" data-shell-home="index.html"
+      data-shell-active="cart"
+      data-shell-nav='[{"href":"index.html","key":"home","label":"홈"},{"href":"cart.html","key":"cart","label":"장바구니 (2)"}]'>
+  <header data-app-header></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head"><div><h1>장바구니</h1><p>담은 상품 2종</p></div></div>
+
+    <div class="checkout-grid">
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>상품</th><th>수량</th><th>금액</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="row" style="--gap: var(--space-3)">
+                  <span class="thumb" style="width: 56px; border-radius: var(--radius-sm)"></span>
+                  <div>
+                    <div style="font-weight: 600">무선 블루투스 스피커</div>
+                    <div class="muted" style="font-size: var(--text-sm)">색상: 차콜 그레이</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="stepper">
+                  <button type="button" aria-label="감소">−</button>
+                  <input type="text" value="1" aria-label="수량">
+                  <button type="button" aria-label="증가">+</button>
+                </div>
+              </td>
+              <td><strong>42,000원</strong></td>
+              <td class="row-actions"><button class="btn btn--ghost btn--sm" type="button">삭제</button></td>
+            </tr>
+            <tr>
+              <td>
+                <div class="row" style="--gap: var(--space-3)">
+                  <span class="thumb thumb--c" style="width: 56px; border-radius: var(--radius-sm)"></span>
+                  <div>
+                    <div style="font-weight: 600">유기농 드립백 커피 30입</div>
+                    <div class="muted" style="font-size: var(--text-sm)">단품</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="stepper">
+                  <button type="button" aria-label="감소">−</button>
+                  <input type="text" value="2" aria-label="수량">
+                  <button type="button" aria-label="증가">+</button>
+                </div>
+              </td>
+              <td><strong>28,500원</strong></td>
+              <td class="row-actions"><button class="btn btn--ghost btn--sm" type="button">삭제</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="card summary" style="padding: var(--space-5)">
+        <h3 class="mb-4">결제 요약</h3>
+        <div class="summary__row"><span>상품 금액</span><span>70,500원</span></div>
+        <div class="summary__row"><span>임직원 할인</span><span style="color: var(--color-danger)">−16,800원</span></div>
+        <div class="summary__row"><span>배송비</span><span>무료</span></div>
+        <div class="summary__total"><span>결제 예정</span><span>53,700원</span></div>
+        <a class="btn btn--primary btn--block btn--lg mt-4" href="checkout.html">주문하기</a>
+        <a class="btn btn--ghost btn--block mt-4" href="index.html">계속 쇼핑</a>
+      </aside>
+    </div>
+  </main>
+
+  <footer data-app-footer></footer>
+</body>
+</html>
