@@ -5,6 +5,15 @@
 -- ================================
 -- 1. DML이란 + 실습 준비
 -- ================================
+-- 모든 글로벌 변수 확인
+SHOW GLOBAL VARIABLES;
+
+-- 모든 세션 변수 확인
+SHOW SESSION VARIABLES; -- (SESSION 생략 가능)
+
+-- 특정 변수 검색 (예: 캐릭터셋 관련 설정 확인)
+SHOW VARIABLES LIKE 'char%';
+
 
 DROP TABLE IF EXISTS EMP_COPY;
 CREATE TABLE EMP_COPY AS SELECT * FROM EMP;
