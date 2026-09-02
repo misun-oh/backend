@@ -243,7 +243,20 @@ DROP PROCEDURE IF EXISTS GET_SALARY_SAFE;
 DROP PROCEDURE IF EXISTS TRANSFER_SALARY;
 DROP PROCEDURE IF EXISTS INSERT_LOG_IGNORE_DUP;
 
-# 7. TRIGGER 기본 - AFTER UPDATE
+# 7. TRIGGER 기본
+# 7.1 문법
+#   DELIMITER $$
+#   CREATE TRIGGER <트리거명>
+#   {BEFORE | AFTER} {INSERT | UPDATE | DELETE} ON <테이블명>   -- 시점 3 × 이벤트 3 = 6가지
+#   FOR EACH ROW                                                -- 행 단위 트리거만 지원(필수)
+#   BEGIN
+#       -- OLD.컬럼 = 변경 전 값 (INSERT엔 없음), NEW.컬럼 = 변경 후 값 (DELETE엔 없음)
+#       -- BEFORE: SET NEW.컬럼 = ... 로 저장될 값 수정 가능 / AFTER: NEW 수정 불가(이미 저장됨)
+#   END $$
+#   DELIMITER ;
+#   ※ 트리거 안에서는 COMMIT/ROLLBACK/START TRANSACTION 금지. 본문 오류 시 원래 DML도 롤백.
+
+# 7.2 예제 1 - AFTER UPDATE
 DROP TABLE IF EXISTS EMP_COPY;                       -- 사본 초기화
 CREATE TABLE EMP_COPY AS SELECT * FROM EMP;
 DELETE FROM SALARY_LOG;                              -- 로그 비우기
@@ -266,7 +279,7 @@ UPDATE EMP_COPY SET SALARY = SALARY + 200000 WHERE EMP_ID = '209';   -- 이 UPDA
 
 SELECT EMP_ID, OLD_SALARY, NEW_SALARY FROM SALARY_LOG WHERE EMP_ID = '209';   -- 트리거가 남긴 로그 확인
 
-# 8. TRIGGER - BEFORE INSERT
+# 7.3 예제 2 - BEFORE INSERT
 DELIMITER $$
 
 CREATE TRIGGER TRG_EMP_DEFAULT_ENTYN
@@ -285,9 +298,8 @@ VALUES ('221', '테스트', 'D9', 'J7', 2000000, '2026-08-19', NULL);   -- ENT_Y
 
 SELECT EMP_ID, EMP_NAME, ENT_YN FROM EMP_COPY WHERE EMP_ID = '221';   -- 트리거가 'N'으로 채웠는지 확인
 
-# 9. 트리거의 무한 루프 위험 (절대 실행하지 마세요)
--- AFTER UPDATE 트리거 본문에서 같은 테이블(EMP_COPY)을 다시 UPDATE하면
--- 그 UPDATE가 같은 트리거를 또 부르는 무한 루프에 빠져 "Trigger recursion too deep" 오류로 죽습니다.
+# 8. 트리거의 무한 루프 위험 (절대 실행하지 마세요)
+-- AFTER UPDATE 트리거 본문에서 같은 테이블(EMP_COPY)을 다시 UPDATE하면 연쇄 재귀가 됩니다.
 -- CREATE TRIGGER TRG_INFINITE
 -- AFTER UPDATE ON EMP_COPY
 -- FOR EACH ROW
@@ -295,6 +307,35 @@ SELECT EMP_ID, EMP_NAME, ENT_YN FROM EMP_COPY WHERE EMP_ID = '221';   -- 트리�
 --     UPDATE EMP_COPY SET SALARY = SALARY WHERE EMP_ID = NEW.EMP_ID;
 -- END;
 
-# 10. DROP TRIGGER
+# 8.1 실제로 걸렸을 때 - 증상과 처리 방안
+--  증상: 자기 테이블 재변경 -> ERROR 1442 (실행 시점 거부, 무한 루프까지 안 감)
+--        서로 다른 테이블 트리거 순환(A->B->A) -> ERROR 1456 또는 스택 한도 초과, 해당 DML 전체 롤백
+--        프로시저 자기 재귀 CALL -> max_sp_recursion_depth(기본 0) 초과 시 ERROR 1456 (트리거엔 미적용)
+--  -> 트리거/프로시저 본문 오류는 원래 트랜잭션과 함께 롤백되므로 데이터 절반 반영은 없음
+--
+--  복구: (1) 순환 고리의 트리거 하나만 제거하면 연쇄가 끊김
+DROP TRIGGER IF EXISTS TRG_INFINITE;
+--        (2) 어느 테이블에 무슨 트리거가 걸렸는지 확인
+SHOW TRIGGERS;
+SELECT TRIGGER_NAME, EVENT_OBJECT_TABLE, ACTION_TIMING, EVENT_MANIPULATION
+FROM   information_schema.TRIGGERS
+WHERE  TRIGGER_SCHEMA = DATABASE();
+--        (3) 롤백됐으니 데이터 복구는 대개 불필요. 필요하면 0절 EMP_COPY 재생성으로 초기화
+--
+--  예방 재설계:
+--    (1) 이력은 자기 테이블 말고 로그 테이블에 기록 (7절 패턴) - 순환 자체 제거
+--    (2) 가드 조건: IF OLD.SALARY <> NEW.SALARY THEN ...  (실제 변경 시에만 동작)
+--    (3) 같은 행 값 보정은 다시 UPDATE 말고 BEFORE 트리거에서 SET NEW.컬럼 = ... (추가 DML 없음)
+--    (4) 순환이 불가피하면 세션 변수로 재진입 차단:
+--        CREATE TRIGGER TRG_SYNC_B AFTER UPDATE ON TABLE_A FOR EACH ROW
+--        BEGIN
+--            IF @IN_TRG IS NULL THEN
+--                SET @IN_TRG = 1;
+--                UPDATE TABLE_B SET ... WHERE ...;
+--                SET @IN_TRG = NULL;
+--            END IF;
+--        END;
+
+# 9. DROP TRIGGER
 DROP TRIGGER IF EXISTS TRG_EMP_SALARY_LOG;           -- 실습에서 만든 트리거 정리
 DROP TRIGGER IF EXISTS TRG_EMP_DEFAULT_ENTYN;

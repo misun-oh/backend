@@ -16,12 +16,13 @@
 - `CREATE FUNCTION`으로 나만의 함수를 만들어 `SELECT`절에서 재사용할 수 있다.
 - 함수 정의의 각 부분(파라미터, `RETURNS`, 특성 절, `BEGIN…END`, `DECLARE`, `SET`,
   `IF`, `RETURN`)이 어떤 키워드로 어떻게 쓰이는지 안다.
-- `DELIMITER`가 복합문을 하나의 객체로 안전하게 정의하도록 경계를 설정한다는 것과,
-  `DETERMINISTIC` 선언의 의미를 안다.
+- `DELIMITER`가 복합문을 하나의 객체로 안전하게 정의하도록 경계를 설정한다는 것을 안다.
+- 함수의 특성 절(`DETERMINISTIC` 등)은 `log_bin_trust_function_creators` 설정으로 생략할 수
+  있고, 설정을 안 한 서버에서는 키워드를 붙여야 한다는 것을 안다.
 
 ---
 
-## 0. 실습 준비 - 사본 테이블
+## 0. 실습 준비 - 사본 테이블 + 함수 생성 설정
 
 이번 챕터는 뷰를 통해 실제로 데이터를 변경해보므로, `DDL`/`DML`/`TCL` 챕터와 마찬가지로
 원본 `EMP`/`DEPT`를 건드리지 않도록 사본에서 진행합니다.
@@ -33,6 +34,23 @@ DROP TABLE IF EXISTS DEPT_COPY;
 CREATE TABLE DEPT_COPY AS SELECT * FROM DEPT;
 CREATE TABLE EMP_COPY  AS SELECT * FROM EMP;
 ```
+
+### 사용자정의 함수 생성 허용 (한 번만)
+
+MySQL은 바이너리 로그가 켜져 있으면(기본값), 함수를 만들 때 "이 함수가 결정적인지"를
+특성 절(`DETERMINISTIC` 등)로 선언하지 않으면 생성 자체를 거부합니다(`Error 1418`).
+`DML` 챕터의 `sql_safe_updates` 처럼, 실습 편의를 위해 서버에 **한 번만** 아래 설정을 해두면
+특성 키워드 없이도 함수를 만들 수 있습니다.
+
+```sql
+SET GLOBAL log_bin_trust_function_creators = 1;   -- 함수 정의 시 특성 절 생략 허용
+```
+
+- `GLOBAL` 이라 서버가 재시작되기 전까지 유효합니다. 영구 적용은 `my.ini`/`my.cnf` 의
+  `[mysqld]` 에 `log_bin_trust_function_creators = 1` 을 넣고 서버 재시작.
+- 권한이 없어 `SET GLOBAL` 이 막히면(공유 서버 등), **그때만** 함수 정의에
+  `DETERMINISTIC`(또는 `NO SQL` / `READS SQL DATA`)을 직접 붙입니다(7.1 ③).
+- 이 교재의 함수 예제는 이 설정이 돼 있다고 보고 **특성 절을 생략**합니다.
 
 ---
 
@@ -196,7 +214,8 @@ DELIMITER $$                                                    -- 이제부터 
 
 CREATE FUNCTION 함수이름(파라미터명 타입, 파라미터명 타입, ...)   -- ① 머리
 RETURNS 반환타입                                                 -- ② 반환 타입 (필수)
-DETERMINISTIC                                                    -- ③ 특성(characteristic)
+                                                                -- ③ 특성 절: 0절 설정을 했으면 생략.
+                                                                --    안 했으면 여기에 DETERMINISTIC / NO SQL / READS SQL DATA
 BEGIN                                                            -- ④ 본문 블록 시작
     DECLARE 변수명 타입 DEFAULT 초기값;                           -- ⑤ 지역 변수 선언 (맨 위에서만)
     SET 변수명 = 식;                                             -- ⑥ 값 대입
@@ -216,7 +235,7 @@ DELIMITER ;                                                     -- 정의 끝. �
 |---|---|---|
 | ① | `CREATE FUNCTION 이름(...)` | 파라미터는 `이름 타입` 쌍으로 나열. **입력 전용**이라 `IN`/`OUT` 표시를 붙이지 않음(프로시저와 다른 점). 파라미터가 없어도 괄호 `()`는 씀 |
 | ② | `RETURNS 타입` | 돌려줄 값의 타입. **반드시** 파라미터 괄호 다음에 한 번. (본문의 `RETURN`과 다름 — 이건 `S`가 붙은 **선언**) |
-| ③ | 특성 절 | `DETERMINISTIC`(같은 입력 → 항상 같은 출력) 또는 `NOT DETERMINISTIC`. 데이터 접근 선언 `NO SQL`·`READS SQL DATA`·`MODIFIES SQL DATA`. `SQL SECURITY DEFINER│INVOKER`. `COMMENT '설명'`. 필요한 것을 공백으로 나열 |
+| ③ | 특성 절 | **선택** — 0절의 `log_bin_trust_function_creators` 설정을 했으면 아예 생략. (안 했다면 `DETERMINISTIC`·`NO SQL`·`READS SQL DATA` 중 하나는 필수) 그 밖에 `SQL SECURITY DEFINER│INVOKER`, `COMMENT '설명'` 등을 공백으로 나열 |
 | ④ | `BEGIN ... END` | 본문에 실행문이 2개 이상이면 이 블록으로 감쌈. 문장이 하나(예: `RETURN ...`만)면 생략 가능 |
 | ⑤ | `DECLARE 이름 타입 [DEFAULT 값]` | 지역 변수. **`BEGIN` 바로 다음, 다른 실행문보다 먼저** 선언해야 함 |
 | ⑥ | `SET 변수 = 식` | 대입. 쿼리 결과를 넣을 땐 `SELECT 컬럼 INTO 변수 FROM ...` |
@@ -231,9 +250,9 @@ DELIMITER ;                                                     -- 정의 끝. �
 > `//`) 로 바꿔, `END $$` 까지를 **통째로 하나의 `CREATE` 문**으로 서버에 넘깁니다.
 > `DELIMITER` 는 SQL 문법이 아니라 **클라이언트 명령**이라 세미콜론을 붙이지 않습니다.
 
-> `DETERMINISTIC`을 빠뜨리면 서버의 이진 로그(binlog) 설정에 따라 함수 생성 자체가
-> 거부될 수 있습니다. 실제로 결정적이지 않은 함수(`NOW()`, `RAND()` 사용 등)라면
-> `NOT DETERMINISTIC`을 명시합니다.
+> **특성 절을 생략하는 이유**: 0절에서 `log_bin_trust_function_creators = 1` 설정을 했기
+> 때문입니다. 이 설정을 하지 않은 서버라면, 아래 예제들의 `RETURNS ...` 다음 줄에
+> `DETERMINISTIC` 을 추가해야 `Error 1418` 없이 생성됩니다.
 
 ### 7.2 예제 1 - 한 줄 함수 (연봉 계산)
 
@@ -244,7 +263,6 @@ DELIMITER $$
 
 CREATE FUNCTION GET_ANNUAL_SALARY(P_SALARY INT, P_BONUS DECIMAL(4,2))
 RETURNS INT
-DETERMINISTIC
 BEGIN
     RETURN (P_SALARY + P_SALARY * IFNULL(P_BONUS, 0)) * 12;
 END $$
@@ -296,7 +314,6 @@ DELIMITER $$
 
 CREATE FUNCTION SALARY_GRADE(P_SALARY INT)
 RETURNS VARCHAR(10)
-DETERMINISTIC
 BEGIN
     DECLARE V_GRADE VARCHAR(10);          -- ⑤ 지역 변수
 
@@ -367,8 +384,9 @@ DROP FUNCTION IF EXISTS SALARY_GRADE;
   뷰 조회 결과에서 조용히 사라져서 "데이터가 없어졌다"고 착각하게 됩니다.
 - **`DELIMITER`를 안 바꾸고 함수 본문을 작성** → 본문 안 세미콜론에서 정의가 끊겨
   오류가 납니다.
-- **`DETERMINISTIC` 선언을 빠뜨림** → 서버 설정에 따라 함수 생성 자체가 거부될 수
-  있습니다.
+- **`log_bin_trust_function_creators` 설정도 안 하고, 특성 절(`DETERMINISTIC` 등)도 안 씀**
+  → 함수 생성이 `Error 1418` 로 거부됩니다. 0절 설정을 하거나, `RETURNS` 다음에
+  `DETERMINISTIC` 한 줄을 넣으면 됩니다.
 - **`DECLARE`를 `SET`·`IF` 뒤에 씀** → 지역 변수 선언은 `BEGIN` 바로 다음, 실행문보다
   먼저 와야 합니다.
 - **`IF` 분기 중 `RETURN`이 없는 경로가 있음** → "함수에 RETURN이 없다" 오류. 모든
@@ -387,7 +405,7 @@ DROP FUNCTION IF EXISTS SALARY_GRADE;
 | 복합 뷰 | 위 요소 포함 → 읽기 전용 |
 | `WITH CHECK OPTION` | 뷰의 `WHERE` 조건을 벗어나는 변경을 차단 |
 | `DROP VIEW` | 뷰 삭제(원본 데이터는 그대로 유지) |
-| `CREATE FUNCTION` | `이름(파라미터 타입…)` → `RETURNS 타입` → 특성(`DETERMINISTIC` 등) → `BEGIN … END` |
+| `CREATE FUNCTION` | `이름(파라미터 타입…)` → `RETURNS 타입` → `BEGIN … END`. 특성 절(`DETERMINISTIC` 등)은 `log_bin_trust_function_creators=1` 설정 시 생략 |
 | 함수 본문 키워드 | `DECLARE`(변수 선언, 맨 위) · `SET`/`SELECT…INTO`(대입) · `IF/CASE/WHILE`(제어) · `RETURN 값`(반환·종료) |
 | `DELIMITER $$ … ;` | 복합문(`BEGIN…END`)을 하나의 객체로 안전하게 정의하도록 경계를 설정. 본문 안 `;` 로 정의가 끊기지 않게 종결자를 잠시 변경 |
 | `DROP FUNCTION` | 사용자정의 함수 삭제 (본문 수정은 DROP 후 재생성) |

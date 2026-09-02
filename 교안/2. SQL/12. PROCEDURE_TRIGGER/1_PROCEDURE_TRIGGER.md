@@ -559,6 +559,33 @@ INSERT INTO SALARY_LOG (EMP_ID, OLD_SALARY, NEW_SALARY) VALUES ('200', 0, 0);
 -- 위가 중복이면 아무 일 없이 다음 문장으로
 ```
 
+**구문 뜯어보기**:
+
+| 부분 | 의미 |
+| --- | --- |
+| `DECLARE ... HANDLER` | 예외 핸들러를 선언 |
+| `CONTINUE` | 오류가 나도 멈추지 말고 **다음 문장부터 계속** 실행 (`EXIT` 이면 블록 종료) |
+| `FOR 1062` | 반응할 조건 - `1062` 는 **중복 키(Duplicate entry) 오류 번호** |
+| `BEGIN END` | 오류가 잡혔을 때 **실행할 동작(문장 블록)**. 안이 비어 있으니 **"아무것도 하지 마라"** |
+
+- 즉 전체 의미는 **"중복 키 오류(1062)가 나면, 아무 처리도 하지 않고 그냥 넘어가라"** 입니다.
+  중복 데이터를 조용히 버리고 계속 진행하는 패턴.
+- 동작이 **한 문장**이면 `BEGIN ... END` 없이 바로 씁니다.
+  예: `DECLARE CONTINUE HANDLER FOR 1062 SET V_DUP = V_DUP + 1;`
+- `BEGIN ... END` 는 **여러 문장을 하나로 묶을 때**, 또는 지금처럼 **"묶긴 하되 실제로는 아무것도 안 함"**을
+  표현할 때 씁니다. 5.3 예제(`ROLLBACK; RESIGNAL;`)가 전자, 이 예제가 후자.
+- 동작 안에 로직을 넣어 활용할 수도 있습니다.
+
+  ```sql
+  DECLARE V_DUP INT DEFAULT 0;
+
+  DECLARE CONTINUE HANDLER FOR 1062
+  BEGIN
+      SET V_DUP = V_DUP + 1;        -- 중복 건수 카운트
+      -- INSERT INTO ERROR_LOG ...  -- 로그 남기기 등
+  END;
+  ```
+
 > 핸들러가 넓을수록(`SQLEXCEPTION` 전체를 `CONTINUE` 로) 진짜 버그까지 삼켜 원인 추적이
 > 어려워집니다. **꼭 예상되는 조건만 좁게** 잡고, `EXIT` + `RESIGNAL` 을 기본으로 삼으세요.
 
@@ -576,7 +603,50 @@ DROP PROCEDURE IF EXISTS GET_SALARY_SAFE;
 
 ---
 
-## 7. TRIGGER 기본 - AFTER UPDATE
+## 7. TRIGGER 기본
+
+### 7.1 문법
+
+```sql
+DELIMITER $$
+
+CREATE TRIGGER <트리거명>
+{BEFORE | AFTER} {INSERT | UPDATE | DELETE} ON <테이블명>
+FOR EACH ROW
+BEGIN
+    -- 이벤트가 걸린 행마다 1번씩 실행되는 본문
+    -- OLD.컬럼 / NEW.컬럼 으로 그 행의 값을 참조
+END $$
+
+DELIMITER ;
+```
+
+**① 시점 × 이벤트 = 6가지** — `{BEFORE|AFTER}` × `{INSERT|UPDATE|DELETE}`
+
+| | `BEFORE` (저장 전) | `AFTER` (저장 후) |
+|---|---|---|
+| 주 용도 | 저장될 값 **검증·가공**(`SET NEW.컬럼 = ...`), 잘못된 값이면 `SIGNAL` 로 거부 | **이력 로깅**, 다른 테이블 집계 갱신 등 부수 작업 |
+| `NEW` 값 수정 | 가능 (그 값이 실제로 저장됨) | 불가 (이미 저장 끝 — 바꿔도 무시) |
+
+**② `OLD` / `NEW`** — 그 행의 값을 가리키는 의사 레코드
+
+| 이벤트 | `OLD` (변경 전) | `NEW` (변경 후) |
+|---|---|---|
+| `INSERT` | 없음 (에러) | 삽입될 행 |
+| `UPDATE` | 수정 전 행 | 수정 후 행 |
+| `DELETE` | 삭제될 행 | 없음 (에러) |
+
+**③ 규칙·주의**
+
+- `FOR EACH ROW` 는 필수. MySQL 은 **행 단위 트리거만** 지원(문(statement) 단위 없음).
+- 본문에 `;` 가 들어가므로 **`DELIMITER` 변경**이 필요(프로시저와 동일).
+- 트리거 안에서는 `COMMIT`/`ROLLBACK`/`START TRANSACTION` **금지**. 트리거는 그 DML 의
+  트랜잭션에 묶여 실행되고, 본문에서 오류(`SIGNAL` 포함)가 나면 원래 DML 도 함께 롤백됩니다.
+- 같은 테이블·같은 시점·같은 이벤트에 트리거를 여러 개 둘 수 있음. 순서를 정하려면
+  `FOLLOWS`/`PRECEDES <다른트리거명>` 을 붙입니다.
+- 이벤트가 걸린 테이블 자신을 트리거 본문에서 다시 변경하면 재귀/오류(8절 참고).
+
+### 7.2 예제 1 - AFTER UPDATE
 
 ```sql
 -- 0절의 EMP_COPY 재생성 스크립트를 다시 실행해 상태를 초기화한 뒤 진행합니다.
@@ -613,7 +683,7 @@ SELECT EMP_ID, OLD_SALARY, NEW_SALARY FROM SALARY_LOG WHERE EMP_ID = '209';
 
 ---
 
-## 8. TRIGGER - BEFORE INSERT
+### 7.3 예제 2 - BEFORE INSERT
 
 ```sql
 DELIMITER $$
@@ -647,7 +717,7 @@ SELECT EMP_ID, EMP_NAME, ENT_YN FROM EMP_COPY WHERE EMP_ID = '221';
 
 ---
 
-## 9. 트리거의 무한 루프 위험
+## 8. 트리거의 무한 루프 위험
 
 ```sql
 -- 절대 실행하지 마세요 (무한 루프 예시, 주석 처리된 상태로만 확인)
@@ -661,14 +731,59 @@ SELECT EMP_ID, EMP_NAME, ENT_YN FROM EMP_COPY WHERE EMP_ID = '221';
 
 **설명**: `AFTER UPDATE ON EMP_COPY` 트리거 본문 안에서 다시 `EMP_COPY`를
 `UPDATE`하면, 그 `UPDATE`가 같은 트리거를 다시 실행시키고, 그 트리거가 또
-`UPDATE`를 실행하는 **무한 루프**에 빠집니다(MySQL은 기본적으로 트리거 재귀 호출
-깊이를 제한하지만, 결국 `Trigger recursion too deep` 오류로 죽습니다). 트리거
-안에서 로그를 남기고 싶다면 **자기 자신이 아닌 다른 테이블**(7절의 `SALARY_LOG`
-처럼)에 기록해야 합니다.
+`UPDATE`를 실행하는 **연쇄 재귀**가 됩니다. 트리거 안에서 로그를 남기고 싶다면
+**자기 자신이 아닌 다른 테이블**(7절의 `SALARY_LOG`처럼)에 기록해야 합니다.
+
+### 8.1 실제로 걸렸을 때 - 증상과 처리 방안
+
+**증상 (MySQL이 어떻게 막는가)**
+
+| 상황 | MySQL 동작 |
+|---|---|
+| 트리거가 **자기 테이블**을 직접 `UPDATE`/`INSERT`/`DELETE` | 실행 시점에 `ERROR 1442` (`Can't update table ... already used by statement which invoked this ... trigger`)로 **거부**. 실제로 무한 루프까지 가지 않음 |
+| 서로 다른 테이블 트리거가 **순환**(A 수정→B트리거→A 수정→…) | `ERROR 1456` (`Recursive ... triggers are not allowed`) 또는 스택 한도 초과. 해당 DML **전체가 롤백** |
+| 프로시저에서 자기 자신을 재귀 `CALL` | `max_sp_recursion_depth`(기본 0) 초과 시 `ERROR 1456`. 이 변수는 **프로시저 전용**이며 트리거엔 적용 안 됨 |
+
+- 공통점: 트리거·프로시저 본문에서 난 오류는 **원래 트랜잭션에 묶여 함께 롤백**되므로,
+  데이터가 절반만 반영되는 오염은 생기지 않습니다. 이미 별도로 커밋된 이력 행만 정리하면 됩니다.
+
+**복구 절차**
+
+1. 순환 고리 중 **트리거 하나만 제거**하면 연쇄가 끊깁니다.
+   ```sql
+   DROP TRIGGER IF EXISTS TRG_INFINITE;
+   ```
+2. `SHOW TRIGGERS;` 또는
+   `SELECT TRIGGER_NAME, EVENT_OBJECT_TABLE, ACTION_TIMING, EVENT_MANIPULATION FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE();`
+   로 어느 테이블에 무슨 트리거가 걸려 있는지 확인해 순환 경로를 찾습니다.
+3. 오류로 롤백됐으니 데이터 복구는 대개 불필요. 필요하면 0절의 `EMP_COPY` 재생성으로 초기화.
+
+**재설계 방안 (되풀이 방지)**
+
+| 방법 | 내용 |
+|---|---|
+| ① 다른 테이블에 기록 | 이력은 자기 테이블이 아닌 **로그 테이블**로 (7절 패턴). 순환 자체를 없앰 |
+| ② 가드 조건 | 값이 **실제로 바뀐 경우에만** 동작: `IF OLD.SALARY <> NEW.SALARY THEN ...`. 불필요한 연쇄를 차단 |
+| ③ `BEFORE` 로 값 보정 | 같은 행의 값을 바꾸려면 다시 `UPDATE` 하지 말고 `BEFORE` 트리거에서 `SET NEW.컬럼 = ...`. 추가 DML이 없어 연쇄가 생기지 않음 |
+| ④ 세션 변수 플래그 | 순환이 불가피한 구조면 재진입을 막음 (아래) |
+
+```sql
+-- ④ 재진입 차단 패턴 (다른 테이블 트리거끼리 순환할 때)
+CREATE TRIGGER TRG_SYNC_B
+AFTER UPDATE ON TABLE_A
+FOR EACH ROW
+BEGIN
+    IF @IN_TRG IS NULL THEN          -- 이미 트리거 연쇄 안이면 재실행 안 함
+        SET @IN_TRG = 1;
+        UPDATE TABLE_B SET ... WHERE ...;
+        SET @IN_TRG = NULL;          -- 연쇄 끝나면 해제
+    END IF;
+END;
+```
 
 ---
 
-## 10. DROP TRIGGER
+## 9. DROP TRIGGER
 
 ```sql
 DROP TRIGGER IF EXISTS TRG_EMP_SALARY_LOG;
@@ -690,7 +805,7 @@ DROP TRIGGER IF EXISTS TRG_EMP_DEFAULT_ENTYN;
 - **핸들러 동작이 여러 문장인데 `BEGIN ... END` 로 안 감쌈** → 문법 오류. 한 문장이면
   블록 없이도 됩니다.
 - **커서를 `OPEN`만 하고 `CLOSE`를 안 함** → 리소스가 계속 열린 채로 남습니다.
-- **트리거 안에서 자기 테이블을 다시 `UPDATE`/`INSERT`** → 무한 루프(9절).
+- **트리거 안에서 자기 테이블을 다시 `UPDATE`/`INSERT`** → 무한 루프(8절).
 - **`AFTER` 트리거에서 `NEW` 값을 바꾸면 반영될 거라 착각** → `BEFORE`
   트리거에서만 `NEW` 값 변경이 실제 저장값에 반영됩니다.
 - **프로시저의 `OUT` 파라미터에 값을 채우지 않고 끝냄** → 호출부에서 `NULL`을
@@ -721,5 +836,5 @@ DROP TRIGGER IF EXISTS TRG_EMP_DEFAULT_ENTYN;
 | SQLSTATE·오류번호 | 목록·`SIGNAL`/`RESIGNAL`/`GET DIAGNOSTICS` → [SQLSTATE_참고표.md](SQLSTATE_참고표.md) |
 | `CREATE TRIGGER` | `BEFORE`/`AFTER` × `INSERT`/`UPDATE`/`DELETE`, `OLD`/`NEW`로 값 참조 |
 | `BEFORE` 트리거 | `NEW` 값을 바꿔 실제 저장값을 변경 가능 |
-| 트리거 무한 루프 | 트리거 안에서 자기 테이블을 다시 변경하면 발생. 다른 테이블에 기록해서 회피 |
+| 트리거 무한 루프 | 자기 테이블 재변경은 `ERROR 1442`, 순환 트리거는 `ERROR 1456` 로 MySQL이 막고 DML은 롤백됨. 걸리면 순환 고리의 트리거 하나를 `DROP`. 예방: 다른 테이블에 기록 / `IF OLD<>NEW` 가드 / `BEFORE`서 `SET NEW` / `@플래그` 재진입 차단 (8.1절) |
 | `DROP PROCEDURE`/`DROP TRIGGER` | 정리 |

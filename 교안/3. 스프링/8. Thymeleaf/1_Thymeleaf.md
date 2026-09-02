@@ -156,7 +156,8 @@
 
 ## 7. 레이아웃 재사용 — fragment
 
-`prototypes/templates/`의 공통 헤더/푸터를 fragment로 뽑습니다.
+프로토타입에서 각 페이지에 인라인해 두었던 **메뉴 폼**(`prototypes/templates/hr/_menu.html` 의
+헤더/푸터)을 fragment로 뽑아, 이제 진짜로 "한 곳에 정의 → 여러 페이지에서 재사용"합니다.
 
 `templates/fragments/layout.html`:
 ```html
@@ -223,7 +224,7 @@ src/main/resources/static/
 ```
 
 `http://localhost:8080/css/basic.css` 로 바로 서빙됩니다. 템플릿에서는 `th:href="@{/css/basic.css}"`.
-(`app-shell.js` 가 하던 헤더 주입은 Thymeleaf fragment 로 대체됐으므로 옮기지 않습니다.)
+(프로토타입에는 `app-shell.js` 가 없습니다 — 공통 헤더/푸터는 위 7절처럼 fragment 로 만듭니다.)
 
 ---
 

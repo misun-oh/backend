@@ -1,8 +1,9 @@
 # Day 16. VIEW & 사용자정의 FUNCTION - 실습
 
 > 아래 문제는 `EMP_COPY`/`DEPT_COPY`(원본 `EMP`/`DEPT`의 사본)로 풀 수 있습니다.
-> 각 문제를 풀기 전, `1_VIEW_FUNCTION.md` 0절의 사본 생성 스크립트를 먼저
-> 실행해 원본과 동일한 상태에서 시작하세요. (MySQL 8.0 문법 기준)
+> 각 문제를 풀기 전, `1_VIEW_FUNCTION.md` 0절의 스크립트(사본 생성 +
+> `SET GLOBAL log_bin_trust_function_creators = 1;`)를 먼저 실행하세요. 그 설정을 하면
+> 함수 정의에서 `DETERMINISTIC` 같은 특성 절을 생략할 수 있습니다. (MySQL 8.0 문법 기준)
 
 ---
 
