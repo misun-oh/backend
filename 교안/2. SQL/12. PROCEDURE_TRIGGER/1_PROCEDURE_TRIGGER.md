@@ -838,3 +838,199 @@ DROP TRIGGER IF EXISTS TRG_EMP_DEFAULT_ENTYN;
 | `BEFORE` 트리거 | `NEW` 값을 바꿔 실제 저장값을 변경 가능 |
 | 트리거 무한 루프 | 자기 테이블 재변경은 `ERROR 1442`, 순환 트리거는 `ERROR 1456` 로 MySQL이 막고 DML은 롤백됨. 걸리면 순환 고리의 트리거 하나를 `DROP`. 예방: 다른 테이블에 기록 / `IF OLD<>NEW` 가드 / `BEFORE`서 `SET NEW` / `@플래그` 재진입 차단 (8.1절) |
 | `DROP PROCEDURE`/`DROP TRIGGER` | 정리 |
+
+---
+
+## 실무에서는 언제 쓰나 - ERP · 결재 · 도서관리 시스템
+
+> 아래 예시는 핵심만 보이려고 `DELIMITER $$ … $$ DELIMITER ;` 감싸기와 `DROP ... IF EXISTS`를
+> 생략했습니다. 실제 실행할 때는 앞 절들처럼 붙여야 합니다. 테이블·컬럼명도 개념 전달용입니다.
+
+### 1) ERP - 재고·회계처럼 "항상 맞아떨어져야" 하는 값
+
+| 업무 | 무엇을 | 트리거/프로시저 |
+|---|---|---|
+| 입출고가 기록되면 품목별 현재고 자동 반영 | 파생값 자동 갱신 | 트리거 (`AFTER INSERT`) |
+| 매출 전표 발생 시 분개(매출채권/매출) 자동 생성 | 여러 행 INSERT | 프로시저 `CALL` |
+| 월마감 - 기간 합계를 마감표에 적재 + 원장에 마감표시 | 여러 DML을 한 트랜잭션으로 | 프로시저 + `START TRANSACTION` |
+| 단가·계정 변경 이력 | 감사 로그 | 트리거 (`AFTER UPDATE`, `OLD<>NEW`) |
+
+**재고 자동 반영 트리거** — 이동 테이블에 한 줄 넣으면 현재고가 따라옵니다.
+
+```sql
+CREATE TRIGGER TRG_STOCK_APPLY
+AFTER INSERT ON STOCK_MOVE            -- STOCK_MOVE(이동ID, 품목ID, MOVE_TYPE('IN'/'OUT'), QTY, ...)
+FOR EACH ROW
+BEGIN
+    UPDATE ITEM_STOCK
+    SET QTY = QTY + IF(NEW.MOVE_TYPE = 'IN', NEW.QTY, -NEW.QTY),
+        UPDATED_AT = NOW()
+    WHERE ITEM_ID = NEW.ITEM_ID;
+END
+```
+
+**설명**: 배치·수기·API 어느 경로로 입출고가 들어와도 재고가 한 곳(트리거)에서 일관되게
+계산됩니다. 갱신 대상이 자기 테이블(`STOCK_MOVE`)이 아니라 `ITEM_STOCK`이라 8절의 무한
+루프에 걸리지 않습니다. 7.2의 `SALARY_LOG` 패턴과 같은 구조입니다.
+
+**월마감 프로시저** — 집계 적재와 상태 변경을 전부 성공 아니면 전부 취소.
+
+```sql
+CREATE PROCEDURE CLOSE_MONTH(IN P_YM CHAR(6))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN ROLLBACK; RESIGNAL; END;
+
+    START TRANSACTION;
+        INSERT INTO CLOSE_SUMMARY (YM, ACCT_ID, AMT)
+        SELECT P_YM, ACCT_ID, SUM(AMT)
+        FROM JOURNAL
+        WHERE DATE_FORMAT(TRX_DATE, '%Y%m') = P_YM
+        GROUP BY ACCT_ID;
+
+        UPDATE JOURNAL SET CLOSED = 'Y'
+        WHERE DATE_FORMAT(TRX_DATE, '%Y%m') = P_YM;
+    COMMIT;
+END
+```
+
+**설명**: 5.3의 롤백 핸들러 패턴 그대로입니다. 마감표만 만들어지고 원장 마감표시가 안 되는
+어정쩡한 상태를 막습니다.
+
+### 2) 결재 시스템 - 상태 변화 이력과 후속 처리
+
+| 업무 | 무엇을 | 트리거/프로시저 |
+|---|---|---|
+| 문서 상태가 바뀔 때마다 "누가·언제·무슨 상태로" 기록 | 감사 로그 | 트리거 (`AFTER UPDATE`) |
+| 반려되면 기안자에게 알림 | 부수 작업 | 같은 트리거 안에서 알림 큐 INSERT |
+| 문서 생성 시 부서 규칙대로 결재선 여러 단계 자동 생성 | 규칙 테이블 순회 | 프로시저 + 커서 |
+| 최종 승인 시 연차 차감·예산 차감 등 후속 반영 | 여러 DML 묶음 | 프로시저 `CALL` |
+
+**상태 이력 + 반려 알림 트리거**
+
+```sql
+CREATE TRIGGER TRG_APPROVAL_HISTORY
+AFTER UPDATE ON APPROVAL_DOC
+FOR EACH ROW
+BEGIN
+    IF OLD.STATUS <> NEW.STATUS THEN
+        INSERT INTO APPROVAL_HISTORY (DOC_ID, FROM_STATUS, TO_STATUS, ACTOR_ID, CHANGED_AT)
+        VALUES (NEW.DOC_ID, OLD.STATUS, NEW.STATUS, NEW.LAST_ACTOR, NOW());
+
+        IF NEW.STATUS = 'REJECTED' THEN
+            INSERT INTO NOTI_QUEUE (USER_ID, MSG)
+            VALUES (NEW.DRAFTER_ID, CONCAT('문서 ', NEW.DOC_ID, ' 가 반려되었습니다.'));
+        END IF;
+    END IF;
+END
+```
+
+**설명**: 앱 코드가 여러 화면·배치에서 상태를 바꿔도 이력은 빠짐없이 남습니다. 감사(audit)
+요건이 있는 시스템에서 트리거가 가장 흔하게 쓰이는 자리입니다.
+
+**결재선 자동 생성 프로시저** — 4절 커서 패턴의 실무 버전.
+
+```sql
+CREATE PROCEDURE MAKE_APPROVAL_LINE(IN P_DOC_ID INT, IN P_DRAFTER VARCHAR(10))
+BEGIN
+    DECLARE V_DONE INT DEFAULT 0;
+    DECLARE V_APPROVER VARCHAR(10);
+    DECLARE V_STEP INT DEFAULT 1;
+
+    DECLARE CUR CURSOR FOR
+        SELECT APPROVER_ID FROM APPROVAL_RULE
+        WHERE DEPT_ID = (SELECT DEPT_ID FROM EMP WHERE EMP_ID = P_DRAFTER)
+        ORDER BY STEP_ORDER;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET V_DONE = 1;
+
+    OPEN CUR;
+    READ_LOOP: LOOP
+        FETCH CUR INTO V_APPROVER;
+        IF V_DONE = 1 THEN LEAVE READ_LOOP; END IF;
+
+        INSERT INTO APPROVAL_LINE (DOC_ID, STEP, APPROVER_ID, STATUS)
+        VALUES (P_DOC_ID, V_STEP, V_APPROVER, 'WAITING');
+        SET V_STEP = V_STEP + 1;
+    END LOOP;
+    CLOSE CUR;
+END
+```
+
+**설명**: 규칙 테이블(`APPROVAL_RULE`)을 한 행씩 돌며 결재 단계 행을 만들어 넣습니다.
+"한 문장으로 안 되는 행 단위 처리"라 커서가 정당하게 쓰이는 예입니다.
+
+### 3) 도서관리 시스템 - 대출 규칙과 반납 정산
+
+| 업무 | 무엇을 | 트리거/프로시저 |
+|---|---|---|
+| 대출 시 회원 대출 권수 한도 검사, 초과면 거부 | 무결성 규칙 강제 | 트리거 (`BEFORE INSERT` + `SIGNAL`) |
+| 대출일·반납예정일 기본값 자동 채움 | 파생값 | 같은 `BEFORE INSERT` 트리거 |
+| 반납 시 연체일 계산 → 연체료 부과 | 조건 분기 + 여러 DML | 프로시저 |
+| 도서별 대출 횟수(인기순위) 집계 갱신 | 파생값 | 트리거 (`AFTER INSERT`) |
+
+**대출 한도 검증 + 기본값 트리거**
+
+```sql
+CREATE TRIGGER TRG_RENTAL_LIMIT
+BEFORE INSERT ON RENTAL
+FOR EACH ROW
+BEGIN
+    DECLARE V_CNT INT;
+
+    SELECT COUNT(*) INTO V_CNT
+    FROM RENTAL
+    WHERE MEMBER_ID = NEW.MEMBER_ID AND RETURN_DATE IS NULL;
+
+    IF V_CNT >= 5 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '대출 한도(5권)를 초과했습니다.';
+    END IF;
+
+    SET NEW.RENT_DATE = IFNULL(NEW.RENT_DATE, CURDATE());
+    SET NEW.DUE_DATE  = IFNULL(NEW.DUE_DATE,  CURDATE() + INTERVAL 14 DAY);
+END
+```
+
+**설명**: 업무 규칙(한도 5권, 반납예정일 14일)을 DB가 강제합니다. `SIGNAL`로 오류를 내면
+그 `INSERT`는 취소되고 트랜잭션도 롤백됩니다(7.1 규칙). 7.3의 기본값 채우기와 5절의
+`SIGNAL`을 합친 형태입니다.
+
+**반납 처리 프로시저** — 반납과 연체료 부과를 한 묶음으로.
+
+```sql
+CREATE PROCEDURE RETURN_BOOK(IN P_RENTAL_ID INT)
+BEGIN
+    DECLARE V_DUE DATE;
+    DECLARE V_OVERDUE INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN ROLLBACK; RESIGNAL; END;
+
+    START TRANSACTION;
+        SELECT DUE_DATE INTO V_DUE FROM RENTAL WHERE RENTAL_ID = P_RENTAL_ID;
+        SET V_OVERDUE = GREATEST(DATEDIFF(CURDATE(), V_DUE), 0);
+
+        UPDATE RENTAL SET RETURN_DATE = CURDATE() WHERE RENTAL_ID = P_RENTAL_ID;
+
+        IF V_OVERDUE > 0 THEN
+            INSERT INTO FINE (RENTAL_ID, OVERDUE_DAYS, AMOUNT)
+            VALUES (P_RENTAL_ID, V_OVERDUE, V_OVERDUE * 100);   -- 하루 100원
+        END IF;
+    COMMIT;
+END
+```
+
+**설명**: 3절의 `IF` 분기와 5.3의 트랜잭션 패턴을 합쳤습니다. 반납 표시만 되고 연체료가
+누락되는 일을 막습니다.
+
+### 정리 - 트리거로 갈지, 프로시저로 갈지, 앱으로 갈지
+
+| 상황 | 선택 | 이유 |
+|---|---|---|
+| 변경 이력·감사 로그, 파생값 자동 채움, 무결성 규칙 강제 | **트리거** | 호출을 "빠뜨리면 안 되는" 것들. 이벤트에 자동으로 붙음 |
+| 여러 단계를 한 트랜잭션으로 묶는 업무(마감·이체·반납정산) | **프로시저** | 트랜잭션 제어가 필요하고 명시적으로 `CALL` |
+| 규칙 테이블을 돌며 여러 행 생성(결재선·스케줄 전개) | **프로시저 + 커서** | 행 단위 절차 처리 |
+| 화면마다 다르게 조합되는 조회·표시 로직 | **앱(Service) 계층** | DB에 묶으면 이식성·테스트·버전관리가 나빠짐 |
+
+**실무 감각**: 트리거는 눈에 안 보이게 동작해서(44행) 신입이 원인 추적에 애를 먹습니다.
+그래서 요즘 많은 팀은 **핵심 업무 트랜잭션은 앱 계층**에 두고, 프로시저·트리거는
+**감사 로그·정합성 보강·기본값**처럼 범위가 좁고 예측 가능한 곳에만 제한적으로 씁니다.
+"이 로직이 DB에 항상 붙어 있어야 하는가, 아니면 특정 앱의 사정인가"를 기준으로 판단하세요.
