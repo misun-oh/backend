@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인 · 사원관리</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/hr.css">
+  <script src="/js/component.js" defer></script>
+</head>
+<body>
+  <!--
+    로그인 화면 (Day 17 Spring Security 연결 지점)
+    - 공통 헤더/푸터 없이 가운데 카드만 두는 화면 (.auth-wrap / .auth-card = app-shell.css)
+    - Thymeleaf 전환:
+        form: <form th:action="@{/login}" method="post">  (Security 가 CSRF hidden 자동 주입)
+        입력 name 은 Security 기본값인 username / password 를 그대로 사용
+        실패 시 리다이렉트 ?error → <div class="alert alert--danger" th:if="${param.error}">
+        로그아웃 후 ?logout → <div class="alert alert--info" th:if="${param.logout}">
+  -->
+  <main class="auth-wrap">
+    <div class="auth-card stack" style="--gap: var(--space-5)">
+      <div class="text-center stack" style="--gap: var(--space-1)">
+        <p style="font-size: var(--text-2xl)">👔</p>
+        <h1 style="font-size: var(--text-xl)">사원관리 시스템</h1>
+        <p class="muted" style="font-size: var(--text-sm)">사내 계정으로 로그인하세요.</p>
+      </div>
+
+      <!-- 로그인 실패 시 서버가 이 배너를 렌더링 (예시로 표시해 둠) -->
+      <div class="alert alert--danger" role="alert">
+        <span class="alert__icon" aria-hidden="true">!</span>
+        <div class="alert__body">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+      </div>
+
+      <form class="stack" style="--gap: var(--space-4)" action="/login" method="post" data-login-form>
+        <div class="field">
+          <label class="label" for="username">아이디</label>
+          <input class="input" id="username" name="username" autocomplete="username" placeholder="사번 또는 이메일" required autofocus>
+        </div>
+        <div class="field">
+          <label class="label" for="password">비밀번호</label>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <label class="check">
+          <input type="checkbox" name="remember-me">
+          <span>로그인 유지</span>
+        </label>
+        <button class="btn btn--primary btn--block" type="submit">로그인</button>
+      </form>
+
+      <p class="text-center muted" style="font-size: var(--text-sm)">
+        계정이 없으신가요? <a href="#">관리자에게 계정 발급을 요청</a>하세요.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    // 프로토타입: 실제 인증 대신 대시보드로 이동
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelector("[data-login-form]").addEventListener("submit", function (e) {
+        e.preventDefault();
+        location.href = "dashboard.html";
+      });
+    });
+  </script>
+</body>
+</html>

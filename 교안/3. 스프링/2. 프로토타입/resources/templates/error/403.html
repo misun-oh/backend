@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>403 · 접근 권한이 없습니다</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+</head>
+<body>
+  <!-- 403 전용: 로그인은 했지만 권한이 없을 때 (Spring Security accessDeniedPage) -->
+  <main class="auth-wrap">
+    <div class="empty-state" style="max-width: 420px">
+      <p class="empty-state__icon" aria-hidden="true">🔒</p>
+      <p class="empty-state__title">접근 권한이 없습니다 (403)</p>
+      <p class="empty-state__desc">이 페이지를 볼 수 있는 권한이 계정에 없습니다. 필요하면 관리자에게 요청하세요.</p>
+      <a class="btn btn--primary btn--sm" href="/">처음으로</a>
+    </div>
+  </main>
+</body>
+</html>

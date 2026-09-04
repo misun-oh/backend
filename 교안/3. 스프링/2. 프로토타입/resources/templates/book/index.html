@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>도서 · 사내도서관</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+  <link rel="stylesheet" href="/css/app-shell.css">
+  <link rel="stylesheet" href="/css/book.css">
+  <script src="/js/component.js" defer></script>
+</head>
+<body>
+  <!-- 공통 메뉴 — templates/book/_menu.html 참고 (Thymeleaf 전환 시 fragment 로) -->
+  <header class="site-header">
+    <div class="site-header__inner container container--wide">
+      <a class="site-header__brand" href="index.html">📚 사내도서관</a>
+      <nav class="site-nav hide-mobile" aria-label="주요 메뉴">
+        <a href="index.html" aria-current="page">도서</a>
+        <a href="my-rentals.html">내 대여</a>
+      </nav>
+      <span class="spacer"></span>
+      <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle aria-label="다크 모드 전환">🌓</button>
+      <a class="btn btn--primary btn--sm" href="/login">로그인</a>
+    </div>
+  </header>
+
+  <main class="app-main container container--wide">
+    <!-- Hero 캐러셀 -->
+    <div class="carousel" data-carousel data-autoplay="5000" data-loop>
+      <div class="carousel__viewport">
+        <ul class="carousel__track">
+          <li class="carousel__slide"><div class="hero-slide">
+            <p class="eyebrow">이 달의 추천</p>
+            <h2 class="display text-balance">좋은 책은<br>가까이 있어야 합니다</h2>
+            <p class="lead">사원이라면 누구나 2주 무료 대여</p>
+          </div></li>
+          <li class="carousel__slide"><div class="hero-slide">
+            <p class="eyebrow">신간 입고</p>
+            <h2 class="display text-balance">이번 주 새 책<br>32권 도착</h2>
+            <p class="lead">개발 · 디자인 · 경영</p>
+          </div></li>
+          <li class="carousel__slide"><div class="hero-slide">
+            <p class="eyebrow">사내 독서 모임</p>
+            <h2 class="display text-balance">함께 읽으면<br>끝까지 읽습니다</h2>
+            <p class="lead">매월 첫째 주 금요일 점심</p>
+          </div></li>
+        </ul>
+        <button type="button" class="carousel__arrow carousel__arrow--prev" aria-label="이전">‹</button>
+        <button type="button" class="carousel__arrow carousel__arrow--next" aria-label="다음">›</button>
+      </div>
+      <div class="carousel__dots" aria-label="슬라이드 선택"></div>
+    </div>
+
+    <div class="page-head" style="margin-top: var(--space-8)">
+      <div><h1>전체 도서</h1><p>총 248권 · 대여 가능 191권</p></div>
+    </div>
+
+    <!-- 검색/필터 : GET 폼 (조건이 URL 에 남아 페이징·북마크·뒤로가기에 재사용됨) -->
+    <form class="toolbar" method="get" action="/books">
+      <div class="input-group">
+        <input class="input" type="search" name="keyword" placeholder="제목 · 저자" aria-label="검색어" style="min-width: 240px">
+        <button class="btn btn--secondary" type="submit">검색</button>
+      </div>
+      <select class="select" name="category" aria-label="분류" style="width: 140px">
+        <option value="">전체 분류</option>
+        <option value="dev">개발</option>
+        <option value="design">디자인</option>
+        <option value="biz">경영·경제</option>
+        <option value="essay">에세이</option>
+      </select>
+      <label class="switch">
+        <input type="checkbox" name="availableOnly" value="true" checked>
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span class="switch__label">대여 가능만</span>
+      </label>
+      <span class="spacer"></span>
+      <select class="select" name="sort" aria-label="정렬" style="width: 120px">
+        <option value="new">신착순</option>
+        <option value="popular">인기순</option>
+        <option value="rating">평점순</option>
+      </select>
+      <a class="btn btn--ghost btn--sm" href="/books">초기화</a>
+    </form>
+
+    <div class="grid grid--cards">
+      <article class="card card--hover">
+        <div class="card__media cover">클린 코드</div>
+        <div class="card__body">
+          <span class="badge badge--success badge--dot">대여가능</span>
+          <h3 class="card__title">클린 코드</h3>
+          <p class="card__meta">로버트 C. 마틴</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 4.5" aria-label="평점 4.5"></span>
+            <span class="muted" style="font-size: var(--text-sm)">4.5 (128)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--primary btn--block" href="book-detail.html">상세 보기</a></div>
+        </div>
+      </article>
+      <article class="card card--hover">
+        <div class="card__media cover cover--b">모던 자바<br>인 액션</div>
+        <div class="card__body">
+          <span class="badge badge--warning badge--dot">대여중</span>
+          <h3 class="card__title">모던 자바 인 액션</h3>
+          <p class="card__meta">라울-게이브리얼 우르마 외</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 4" aria-label="평점 4"></span>
+            <span class="muted" style="font-size: var(--text-sm)">4.0 (86)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--secondary btn--block" href="book-detail.html">예약 · 상세</a></div>
+        </div>
+      </article>
+      <article class="card card--hover">
+        <div class="card__media cover cover--c">오브젝트</div>
+        <div class="card__body">
+          <span class="badge badge--success badge--dot">대여가능</span>
+          <h3 class="card__title">오브젝트</h3>
+          <p class="card__meta">조영호</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 5" aria-label="평점 5"></span>
+            <span class="muted" style="font-size: var(--text-sm)">5.0 (54)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--primary btn--block" href="book-detail.html">상세 보기</a></div>
+        </div>
+      </article>
+      <article class="card card--hover">
+        <div class="card__media cover cover--d">HTTP<br>완벽 가이드</div>
+        <div class="card__body">
+          <span class="badge badge--success badge--dot">대여가능</span>
+          <h3 class="card__title">HTTP 완벽 가이드</h3>
+          <p class="card__meta">데이빗 고울리 외</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 3.5" aria-label="평점 3.5"></span>
+            <span class="muted" style="font-size: var(--text-sm)">3.5 (41)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--primary btn--block" href="book-detail.html">상세 보기</a></div>
+        </div>
+      </article>
+      <article class="card card--hover">
+        <div class="card__media cover cover--e">함께 자라기</div>
+        <div class="card__body">
+          <span class="badge badge--success badge--dot">대여가능</span>
+          <h3 class="card__title">함께 자라기</h3>
+          <p class="card__meta">김창준</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 4.5" aria-label="평점 4.5"></span>
+            <span class="muted" style="font-size: var(--text-sm)">4.5 (73)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--primary btn--block" href="book-detail.html">상세 보기</a></div>
+        </div>
+      </article>
+      <article class="card card--hover">
+        <div class="card__media cover cover--f">디자인의<br>디자인</div>
+        <div class="card__body">
+          <span class="badge badge--danger badge--dot">대여불가</span>
+          <h3 class="card__title">디자인의 디자인</h3>
+          <p class="card__meta">하라 켄야</p>
+          <p class="row" style="--gap: var(--space-2)">
+            <span class="rating" style="--rate: 4" aria-label="평점 4"></span>
+            <span class="muted" style="font-size: var(--text-sm)">4.0 (29)</span>
+          </p>
+          <div class="card__footer"><a class="btn btn--secondary btn--block" href="book-detail.html">상세 보기</a></div>
+        </div>
+      </article>
+    </div>
+
+    <!-- 페이징: 검색 폼 파라미터를 그대로 이어붙여 조건 유지 (예시로 page 만) -->
+    <nav class="pagination mt-8" aria-label="페이지">
+      <a class="pagination__item" href="?page=1" aria-label="이전">‹</a>
+      <a class="pagination__item" href="?page=1" aria-current="page">1</a>
+      <a class="pagination__item" href="?page=2">2</a>
+      <a class="pagination__item" href="?page=3">3</a>
+      <a class="pagination__item" href="?page=2" aria-label="다음">›</a>
+    </nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container container--wide row row--between">
+      <p>📚 사내도서관 · 학습용 프로토타입</p>
+      <span class="muted" style="font-size: var(--text-sm)">디자인 시스템: /css/basic.css</span>
+    </div>
+  </footer>
+</body>
+</html>

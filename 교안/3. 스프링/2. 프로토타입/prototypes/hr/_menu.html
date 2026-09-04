@@ -1,0 +1,40 @@
+<!-- =============================================================================
+     hr 공통 메뉴 (메뉴 폼)
+     -----------------------------------------------------------------------------
+     프로토타입(정적 HTML) 단계:
+       각 페이지의 <body> 맨 위에 아래 <header> 를, 맨 아래에 <footer> 를 그대로
+       붙여넣는다. 현재 페이지에 해당하는 <nav> 링크에만 aria-current="page" 를 남긴다.
+       (app-shell.js 가 하던 헤더 주입을 없애고, 마크업을 눈에 보이게 편다.)
+
+     Thymeleaf 전환(Day 8):
+       이 파일을 src/main/resources/templates/fragments/menu.html 로 옮기고
+         <header th:fragment="siteHeader(active)"> ...
+           <a th:href="@{/emps}"  th:classappend="${active=='emp'} ? 'is-active'">사원 목록</a>
+           <a th:href="@{/depts}" ...>부서</a>
+           <a th:href="@{/}"      ...>대시보드</a>
+       각 페이지에서:
+         <header th:replace="~{fragments/menu :: siteHeader('emp')}"></header>
+     ============================================================================= -->
+
+<header class="site-header">
+  <div class="site-header__inner container container--wide">
+    <a class="site-header__brand" href="index.html">👔 사원관리</a>
+    <nav class="site-nav hide-mobile" aria-label="주요 메뉴">
+      <a href="index.html" aria-current="page">사원 목록</a>
+      <a href="depts.html">부서</a>
+      <a href="dashboard.html">대시보드</a>
+    </nav>
+    <span class="spacer"></span>
+    <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle aria-label="다크 모드 전환">🌓</button>
+    <a class="btn btn--primary btn--sm" href="login.html">로그인</a>
+  </div>
+</header>
+
+<!-- 페이지 본문(<main>)은 여기 -->
+
+<footer class="site-footer">
+  <div class="container container--wide row row--between">
+    <p>👔 사원관리 · 학습용 프로토타입</p>
+    <span class="muted" style="font-size: var(--text-sm)">디자인 시스템: /css/basic.css</span>
+  </div>
+</footer>

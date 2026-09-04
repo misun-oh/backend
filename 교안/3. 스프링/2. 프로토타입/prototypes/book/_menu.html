@@ -1,0 +1,29 @@
+<!-- =============================================================================
+     book(사내도서관) 공통 메뉴 (메뉴 폼)
+     - 프로토타입: 각 페이지 <body> 맨 위에 아래 <header> 를, 맨 아래에 <footer> 를
+       그대로 붙여넣는다. 현재 페이지의 <nav> 링크에만 aria-current="page" 를 남긴다.
+       (app-shell.js 의 JS 헤더 주입은 제거했다.)
+     - Thymeleaf 전환: fragments/menu.html 의 th:fragment 로 옮겨 th:replace 로 재사용.
+     ============================================================================= -->
+
+<header class="site-header">
+  <div class="site-header__inner container container--wide">
+    <a class="site-header__brand" href="index.html">📚 사내도서관</a>
+    <nav class="site-nav hide-mobile" aria-label="주요 메뉴">
+      <a href="index.html" aria-current="page">도서</a>
+      <a href="my-rentals.html">내 대여</a>
+    </nav>
+    <span class="spacer"></span>
+    <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle aria-label="다크 모드 전환">🌓</button>
+    <a class="btn btn--primary btn--sm" href="login.html">로그인</a>
+  </div>
+</header>
+
+<!-- 페이지 본문(<main>)은 여기 -->
+
+<footer class="site-footer">
+  <div class="container container--wide row row--between">
+    <p>📚 사내도서관 · 학습용 프로토타입</p>
+    <span class="muted" style="font-size: var(--text-sm)">디자인 시스템: /css/basic.css</span>
+  </div>
+</footer>

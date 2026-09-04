@@ -1,0 +1,61 @@
+// =====================================================================
+//  build.gradle  —  이 프로젝트의 "빌드 설계도" (Gradle, Groovy DSL)
+//  Gradle 이 이 파일을 읽어서: 컴파일 → 테스트 → 의존성 다운로드 → 실행 jar 생성
+//  ※ 자세한 설명은 같은 폴더 0_빌드도구.md 참고
+// =====================================================================
+
+plugins {
+	// 플러그인 = 빌드에 기능(태스크·관례)을 더하는 것.
+	//   id 에 점(.)이 없으면 → Gradle 코어 플러그인 (version 불필요)
+	//   id 에 점(.)이 있으면 → 외부 플러그인 (version 필요, plugins.gradle.org 에서 받음)
+	id 'java'                                                    // compileJava·test·jar 태스크, src/main/java 관례, implementation 등 스코프 제공
+	id 'org.springframework.boot' version '4.0.8'               // bootRun(앱 실행)·bootJar(실행 가능 jar), 메인 클래스 자동 탐지, 스프링 의존성 버전 세트(BOM) 적용
+	id 'io.spring.dependency-management' version '1.1.7'        // 위 BOM 을 dependencies 에 연결 → 스타터에 version 을 안 써도 궁합 맞는 버전으로 채워줌
+}
+
+group = 'com.example'          // 이 프로젝트의 group 좌표 (역도메인 표기)
+version = '0.0.1-SNAPSHOT'     // 이 프로젝트의 버전. SNAPSHOT = 아직 개발 중(계속 바뀜)이라는 관례
+
+java {
+	toolchain {
+		// 이 프로젝트를 "어느 JDK 로" 빌드할지 고정. 지정한 버전이 PC 에 없으면 Gradle 이 받아옴.
+		// (없으면 Gradle 을 실행한 JDK 를 그대로 사용 → 팀원마다 달라질 수 있어 명시하는 게 안전)
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenCentral()             // 의존성(라이브러리)을 내려받을 저장소. Maven Central 이 사실상 표준.
+}
+
+dependencies {
+	// 의존성 좌표 형식 : 'group:artifact:version'
+	//   스프링 스타터는 version 생략 → 부트 BOM 이 정한 버전 사용
+	//   부트가 관리 안 하는 라이브러리는 version 을 직접 명시해야 함
+	//
+	// 스코프(configuration) = 그 의존성을 "언제" 쓰는가
+	//   implementation      : 컴파일 + 런타임 + 배포. 대부분의 라이브러리
+	//   runtimeOnly         : 런타임·배포만 (코드에서 import 안 함)
+	//   compileOnly         : 컴파일만 (배포 jar 엔 불포함)
+	//   annotationProcessor : 컴파일 중 코드 생성기(애노테이션 처리기)
+	//   developmentOnly     : 로컬 개발 실행에만. 배포 jar 에서 제외
+	//   testXxx             : 테스트 코드(src/test)에서만
+
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'   // 뷰 템플릿 엔진(HTML). Thymeleaf + 뷰 리졸버 자동 설정
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'      // Spring MVC + 내장 톰캣(웹 서버). (부트 4에서 starter-web 이 starter-webmvc 로 분리됨)
+
+	compileOnly 'org.projectlombok:lombok'                                    // @Getter/@Builder 등. 컴파일 때만 필요, 실행에는 불필요
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'           // 코드 저장 시 자동 재시작·LiveReload. 개발 편의용
+	runtimeOnly 'com.mysql:mysql-connector-j'                                 // MySQL JDBC 드라이버. 코드에서 import 안 하고 실행 시점에만 필요 → runtimeOnly
+	annotationProcessor 'org.projectlombok:lombok'                            // Lombok 이 실제 메서드 코드를 "생성"하는 처리기. compileOnly 와 짝(둘 다 있어야 동작)
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'  // 테스트용: 뷰/템플릿 관련 테스트 지원
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'     // 테스트용: MockMvc 등 웹 계층 테스트 + JUnit5·AssertJ·Mockito 동봉
+	testCompileOnly 'org.projectlombok:lombok'                                        // 테스트 코드에서도 Lombok 애노테이션 사용
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                      // JUnit5 테스트를 실제로 구동하는 런처(실행 엔진)
+	testAnnotationProcessor 'org.projectlombok:lombok'                               // 테스트 코드용 Lombok 코드 생성 처리기
+}
+
+tasks.named('test') {
+	useJUnitPlatform()         // 테스트를 JUnit 5(JUnit Platform) 방식으로 실행. (JUnit 4 가 아님)
+}

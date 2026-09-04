@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>오류 · 요청을 처리할 수 없습니다</title>
+  <link rel="stylesheet" href="/css/basic.css">
+  <link rel="stylesheet" href="/css/component.css">
+</head>
+<body>
+  <!--
+    공통 에러 페이지 (Spring Boot 기본 위치: templates/error.html)
+    - 특정 상태코드 전용 화면이 필요하면 templates/error/404.html, templates/error/500.html ...
+    - Thymeleaf: <p th:text="${status} + ' ' + ${error}"></p>,  <p th:text="${message}"></p>
+      (운영에서는 message 노출에 주의 — server.error.include-message=on_param 등)
+  -->
+  <main class="auth-wrap">
+    <div class="empty-state" style="max-width: 420px">
+      <p class="empty-state__icon" aria-hidden="true">⚠️</p>
+      <p class="empty-state__title">요청을 처리할 수 없습니다</p>
+      <p class="empty-state__desc">
+        일시적인 문제일 수 있습니다. 잠시 후 다시 시도하거나, 계속되면 관리자에게 문의하세요.
+      </p>
+      <a class="btn btn--primary btn--sm" href="/">처음으로</a>
+    </div>
+  </main>
+</body>
+</html>
