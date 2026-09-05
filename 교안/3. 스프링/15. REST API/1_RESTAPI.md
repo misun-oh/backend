@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 선수학습 | Day 7(MVC), Day 12(페이징), Day 14(검증·예외), HTTP 메서드·상태코드 |
+| 선수학습 | Day 6(MVC), Day 11(페이징), Day 14(검증·예외), HTTP 메서드·상태코드 |
 | 이번 챕터 | `@RestController` → `@RequestBody`/`@ResponseBody` → `ResponseEntity` 와 상태 코드 → 요청/응답 DTO → Jackson(JSON) → `@RestControllerAdvice` 공통 에러 응답 → MockMvc 테스트 |
 | 권장 진행 | 1일 |
 | 결과물 | `/api/emps` CRUD API + 표준 에러 응답 + API 테스트 |

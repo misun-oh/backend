@@ -24,7 +24,9 @@
   "use strict";
 
   /* --- 작은 도우미들 ----------------------------------------------------- */
+  // querySelector 축약 (기본 컨텍스트: document, 컴포넌트 안에서는 root로 범위 좁혀 사용)
   const $  = (sel, ctx = document) => ctx.querySelector(sel);
+  // querySelectorAll 결과를 배열로 변환 — NodeList엔 forEach 말고 map/filter가 없어서
   const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
   const onceInit = (el, key) => {
     // 같은 요소를 두 번 초기화하지 않도록 표시
@@ -32,6 +34,7 @@
     el.dataset[key] = "ready";
     return true;
   };
+  // OS/브라우저의 "동작 줄이기" 접근성 설정 확인 — 자동재생·등장 애니메이션 스킵에 사용
   const prefersReducedMotion = () =>
     global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

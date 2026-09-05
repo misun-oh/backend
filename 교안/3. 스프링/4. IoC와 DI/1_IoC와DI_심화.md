@@ -92,7 +92,7 @@ public class ReportService {
 - 순수 단위 테스트: 스프링 없이 `new EmpService(new FakeEmpMapper())` — 생성자 주입이라 가능.
 - `@SpringBootTest` : 전체 컨텍스트. 느리지만 통합.
 - 슬라이스: `@WebMvcTest`(컨트롤러 계층만), `@MybatisTest`(매퍼만) — 필요한 빈만 로딩.
-- `@MockitoBean` : 컨텍스트의 특정 빈을 목으로 교체(Day 10, 15). (3.x의 `@MockBean` 은 Boot 4에서 삭제)
+- `@MockitoBean` : 컨텍스트의 특정 빈을 목으로 교체(Day 8, 15). (3.x의 `@MockBean` 은 Boot 4에서 삭제)
 
 ## 8. 빈 이름 규칙 / 충돌
 

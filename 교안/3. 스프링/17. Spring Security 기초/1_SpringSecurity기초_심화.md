@@ -37,7 +37,7 @@ public MemberDto getMember(String username) {}
 
 @PostAuthorize("returnObject.owner == authentication.name")
 ```
-`@PreAuthorize` 는 AOP(Day 6) — 내부 호출·public 규칙 동일. 컨트롤러 인가는 `authorizeHttpRequests`,
+`@PreAuthorize` 는 AOP(Day 13) — 내부 호출·public 규칙 동일. 컨트롤러 인가는 `authorizeHttpRequests`,
 서비스 도메인 규칙은 메서드 보안으로 이중.
 
 ## 5. 세션 관리

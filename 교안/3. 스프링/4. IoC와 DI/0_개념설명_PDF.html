@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Day 4 · IoC와 DI — 개념 설명</title>
+<link rel="stylesheet" href="../_pdf-assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <span class="badge">Day 4</span>
+    <h1>IoC와 DI</h1>
+  </div>
+  <p class="doc-sub">제어의 역전(IoC)과 의존성 주입(DI) — 그림으로 한 번에 보기</p>
+
+  <div class="hook">
+    <b>한 줄 요약</b> — "누가 객체를 만들고 연결하는가"의 주인이 <b>내 코드</b>에서 <b>스프링 컨테이너</b>로 바뀌는 것, 그게 IoC입니다. DI는 그 결과로 "필요한 걸 컨테이너가 넣어주는" 방식입니다.
+  </div>
+
+  <section class="block">
+    <h2><span class="num">1</span> 제어의 역전 — Before / After</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart LR
+  subgraph before["Before — 내가 직접 만든다"]
+    direction TB
+    m1["main()"] -->|"new 학과(...)"| d1["학과"]
+    m1 -->|"new 교수(...)"| p1["교수"]
+    m1 -->|"new 학생(학과, 교수)"| s1["학생"]
+  end
+  subgraph after["After — 컨테이너가 만들어 넣어준다"]
+    direction TB
+    ctx["ApplicationContext"] -->|"1. 스캔해서 생성"| eb["EmpMapper 빈"]
+    ctx -->|"2. 생성자로 주입"| es["EmpService"]
+    es -.->|"3. 나는 필요하다고 선언만"| eb
+  end
+      </pre>
+      <figcaption>왼쪽: 내 코드가 생성 순서·연결을 전부 결정 · 오른쪽: 컨테이너가 대신 만들고 꽂아줌</figcaption>
+    </div>
+
+    <table>
+      <thead><tr><th></th><th>부록의 수동 컨테이너</th><th>스프링</th></tr></thead>
+      <tbody>
+        <tr><td>"컨테이너가 관리해" 표시</td><td>커스텀 <code>@주입</code></td><td><code>@Component</code>/<code>@Service</code>/<code>@Repository</code>/<code>@Controller</code></td></tr>
+        <tr><td>대상 찾기</td><td>리플렉션으로 패키지 스캔</td><td><code>@ComponentScan</code></td></tr>
+        <tr><td>만든 객체 보관</td><td><code>Map&lt;Class, Object&gt;</code></td><td><code>ApplicationContext</code>(빈 저장소)</td></tr>
+        <tr><td>필요한 것 꽂아주기</td><td>리플렉션으로 필드 set</td><td>생성자 파라미터로 주입</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">2</span> 빈을 등록하는 3가지 방법</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+  scan["① @Component 계열 + @ComponentScan<br/>— 내가 만든 클래스 (EmpService, EmpController...)"]
+  bean["② @Bean 메서드<br/>— 외부 라이브러리 객체 (ObjectMapper, RestClient...)"]
+  conf["③ @Configuration<br/>— ②의 @Bean들을 담는 상자, 싱글턴 보장"]
+  ctx2["ApplicationContext<br/>(빈 저장소)"]
+  scan --> ctx2
+  bean --> ctx2
+  conf -. "안에 @Bean 담음" .-> bean
+      </pre>
+      <figcaption>대부분의 클래스는 ①, 라이브러리처럼 내가 애노테이션을 못 붙이는 것만 ②·③</figcaption>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">3</span> 생성자 주입 vs 필드 주입</h2>
+    <div class="cols2">
+      <div class="card good">
+        <h4>✓ 생성자 주입 (기본)</h4>
+        <ul>
+          <li><code>final</code> 가능 — 불변, 주입 누락은 컴파일에서 발견</li>
+          <li>의존성이 생성자 시그니처에 다 드러남</li>
+          <li><code>new EmpService(mockMapper)</code> — 스프링 없이 테스트 가능</li>
+          <li>순환 참조를 기동 시 즉시 발견</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h4>✗ 필드 주입 (지양)</h4>
+        <ul>
+          <li><code>@Autowired private ...</code> — <code>final</code> 불가</li>
+          <li>클래스를 다 읽어야 의존성을 알 수 있음</li>
+          <li>리플렉션 없이는 값을 못 채움 → 테스트 불편</li>
+          <li>순환 참조가 런타임에 늦게 터짐</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">4</span> 빈의 생애 — 스코프와 생명주기</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+sequenceDiagram
+  participant C as ApplicationContext
+  participant B as 빈 (예: CacheWarmer)
+  C->>B: 1. 생성자 호출 (의존성 주입)
+  C->>B: 2. @PostConstruct 메서드 실행
+  Note over B: 이후 앱 실행 내내 대기·사용됨 (singleton)
+  C->>B: 3. 컨테이너 종료 직전 @PreDestroy 실행
+      </pre>
+      <figcaption>기본 스코프는 singleton — 컨테이너에 딱 하나, 앱 종료까지 재사용</figcaption>
+    </div>
+    <div class="chips">
+      <span class="chip">singleton (기본)</span>
+      <span class="chip">prototype (조회마다 새로)</span>
+      <span class="chip">request / session (웹 스코프)</span>
+    </div>
+  </section>
+
+  <div class="takeaway">
+    <h2>핵심만 다시</h2>
+    <ul>
+      <li><b>IoC</b> = 객체 생성·연결·소멸의 제어권이 <b>컨테이너</b>에 있다.</li>
+      <li><b>DI</b> = 필요한 협력 객체를 컨테이너가 <b>생성자로</b> 넣어준다.</li>
+      <li>빈 등록은 <b>①스캔 ②@Bean ③@Configuration</b> 세 가지뿐.</li>
+      <li>주입은 <b>생성자 주입</b>이 기본, 필드 주입은 지양.</li>
+      <li>같은 타입이 여럿이면 <code>@Primary</code>(기본 하나) 또는 <code>@Qualifier</code>(이름 지정).</li>
+      <li>싱글턴 빈에는 <b>상태(가변 필드)를 두지 않는다</b> — 동시성 버그의 원인.</li>
+    </ul>
+  </div>
+
+  <footer class="print-tip">인쇄 미리보기(Ctrl+P) → "PDF로 저장"으로 내보내면 됩니다. 본문 교안은 1_IoC와DI.md 참고.</footer>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose",
+    flowchart: { curve: "basis" } });
+</script>
+</body>
+</html>

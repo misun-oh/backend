@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 |---|---|
-| 선수학습 | Day 7(MVC·필터), Day 14(폼), Day 9(MyBatis) |
+| 선수학습 | Day 6(MVC·필터), Day 14(폼), Day 7(MyBatis) |
 | 이번 챕터 | 시큐리티 필터 체인 → `SecurityFilterChain` 설정 → 폼 로그인/로그아웃 → `UserDetailsService` + `PasswordEncoder`(BCrypt) → 경로별 권한(`hasRole`) → 세션 → 회원가입 |
 | 권장 진행 | 1일 |
 | 의존성 | `implementation 'org.springframework.boot:spring-boot-starter-security'` |

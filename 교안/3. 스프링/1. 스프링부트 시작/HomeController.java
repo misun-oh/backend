@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
  *
  * 아래 매핑은 Day 1 설계의 URL 표 그대로다. 오늘은 데이터가 없으므로,
  * 각 주소를 static/hr/*.html 프로토타입 화면으로 redirect 만 한다.
- * Day 7 에서 redirect 대신 Model + 뷰 이름(hr/xxx)으로 실제 데이터를 렌더링한다.
+ * Day 6 에서 redirect 대신 Model + 뷰 이름(hr/xxx)으로 실제 데이터를 렌더링한다.
  */
 @Controller
 public class HomeController {
@@ -42,7 +42,7 @@ public class HomeController {
         return "redirect:/hr/emp-form.html";
     }
 
-    // GET /emps/{id}  → 사원 상세 (id 는 Day 7 에서 @PathVariable 로 실제 사용)
+    // GET /emps/{id}  → 사원 상세 (id 는 Day 6 에서 @PathVariable 로 실제 사용)
     @GetMapping("/emps/{id}")
     public String empDetail(@PathVariable String id) {
         return "redirect:/hr/emp-detail.html";

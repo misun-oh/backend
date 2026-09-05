@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Day 2 — 첫 컨트롤러.
  * @RestController : 메서드 반환값을 그대로 응답 본문으로 쓴다(문자열은 text, 객체는 JSON).
- * HTML 화면을 그리는 @Controller + Thymeleaf 는 Day 7~8.
+ * HTML 화면을 그리는 @Controller + Thymeleaf 는 Day 6~10.
  */
 @RestController
 public class HelloController {

@@ -45,7 +45,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'  // Day 14
     implementation 'org.springframework.boot:spring-boot-starter-security'    // Day 17~
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1' // Day 9~
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1' // Day 6~
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
