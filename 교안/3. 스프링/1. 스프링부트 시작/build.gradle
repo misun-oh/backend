@@ -59,3 +59,11 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()         // 테스트를 JUnit 5(JUnit Platform) 방식으로 실행. (JUnit 4 가 아님)
 }
+
+tasks.withType(JavaCompile).configureEach {
+	// 컴파일 결과(.class)에 "매개변수 이름"을 남긴다.
+	//   → @RequestParam / @PathVariable 에서 값 이름을 생략해도(@PathVariable Long id) 이름으로 매칭됨.
+	//   스프링부트 플러그인이 이미 넣어 주지만, IDE 자체 컴파일러로 돌릴 때를 대비해 명시적으로 고정.
+	//   (자세한 설명: 2_컨트롤러.md 2.2.1)
+	options.compilerArgs.add('-parameters')
+}

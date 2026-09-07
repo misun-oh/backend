@@ -6,6 +6,7 @@
 | 이번 챕터 | 의존성 추가 → `application.yml` DataSource(HikariCP) → MyBatis 설정 → `@Mapper` 인터페이스 + Mapper XML → `#{}` vs `${}` → 메모리 Repository를 Mapper로 교체 |
 | 권장 진행 | 1일 |
 | DB | SQL 과정의 HR 스키마(`EMP`, `DEPT`, `JOB` …). `교안/2. SQL/0. 환경구성/01_실습데이터.md` 스크립트로 준비 |
+| 공식 문서 | MyBatis-Spring 시작하기 — <https://mybatis.org/spring/ko/getting-started.html> (한글). MyBatis 본체 <https://mybatis.org/mybatis-3/ko/> |
 
 ## 학습목표
 
@@ -111,7 +112,48 @@ public interface EmpMapper {
 
 ---
 
-## 3. `namespace` 와 `id`
+## 3. MyBatis-Spring 이 뒤에서 해 주는 일
+
+우리는 `mybatis-spring-boot-starter` 만 넣고 `@Mapper` 인터페이스만 썼습니다.
+그 밑에서 **MyBatis-Spring** 모듈이 아래 3개를 자동으로 만들어 줍니다.
+(공식 문서: <https://mybatis.org/spring/ko/getting-started.html>)
+
+| 스프링 빈 | 역할 | 순수 MyBatis 로 치면 |
+|---|---|---|
+| `SqlSessionFactoryBean` | `DataSource` + MyBatis 설정을 받아 `SqlSessionFactory` 생성 | `SqlSessionFactoryBuilder().build(inputStream)` |
+| `SqlSessionTemplate` | 스레드 안전한 `SqlSession`. 세션 열기/닫기·커밋/롤백을 **스프링 트랜잭션에 위임** | `sqlSessionFactory.openSession()` … `session.close()` 를 매번 |
+| `MapperFactoryBean` / `@MapperScan` | `@Mapper` 인터페이스를 스캔해 프록시 빈으로 등록 | `session.getMapper(EmpMapper.class)` 를 매번 |
+
+즉, **스타터가 없다면** 설정 클래스에 이렇게 직접 써야 합니다(참고용, 우리 과정에선 안 씀):
+
+```java
+@Configuration
+@MapperScan("com.example.hr.mapper")          // @Mapper 인터페이스 스캔
+public class MyBatisConfig {
+
+    @Bean
+    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(dataSource);
+        bean.setMapperLocations(
+            new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*.xml"));
+        return bean.getObject();
+    }
+
+    @Bean
+    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
+        return new SqlSessionTemplate(factory);
+    }
+}
+```
+
+- 스프링 부트 스타터는 위 `@Bean` 들 + `application.yml` 의 `mybatis.*` 를 읽어 **자동 구성**합니다.
+- 그래서 우리는 `@Mapper` 인터페이스와 XML 만 작성하면 됩니다.
+- 트랜잭션(`@Transactional`)이 걸리면 `SqlSessionTemplate` 이 같은 커넥션·세션을 재사용하고, 메서드 끝에서 커밋/롤백합니다(Day 10 에서 다룸).
+
+---
+
+## 4. `namespace` 와 `id`
 
 - XML의 `namespace` = 매퍼 인터페이스의 **전체 이름**(FQCN).
 - `<select id="findByDeptId">` 의 `id` = 인터페이스 **메서드 이름**.
@@ -119,7 +161,7 @@ public interface EmpMapper {
 
 ---
 
-## 4. `#{}` vs `${}`
+## 5. `#{}` vs `${}`
 
 ```xml
 <!-- #{} : PreparedStatement 파라미터 바인딩. 값이 ?로 들어가고 드라이버가 안전하게 처리 -->
@@ -145,7 +187,7 @@ if (!SORTABLE.contains(cond.getSort())) cond.setSort("hireDate");
 
 ---
 
-## 5. 메모리 Repository → MyBatis 로 교체
+## 6. 메모리 Repository → MyBatis 로 교체
 
 Day 5의 계층을 유지하면서 **구현만** 바꿉니다.
 
@@ -182,7 +224,7 @@ public class EmpServiceImpl implements EmpService {
 
 ---
 
-## 6. 사원 목록 조회 완성
+## 7. 사원 목록 조회 완성
 
 ```java
 // mapper/EmpMapper.java

@@ -2,8 +2,8 @@ package com.example.demo.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.dto.LoginDto;
 
@@ -71,17 +71,15 @@ public class HelloController {
 
     // DTO 객체를 파라메터로 전달 받는 방법
     // 파라메터 자동 수집
-    // @ResponseBody : 요청 파라메터를 객체에 담아서 전달
     //      필수값이 아님
     //      필드의 이름으로 요청 파라메터가 전달된경우 
     //      해당 값을 객체에 입력
-    
+    // @ModelAttribute : 파라메너로 넘어온 데이터를 객체에 바인딩 (생략가능)
     // URL이 중복될 경우 오류가 발생 -> 프로젝트가 실행 되지 않음
     // 스프링의 경우 객체를 미리 만들어 놓고 실행
     // 프로젝트 오류가 있는경우 프로젝트 자체가 실행이 안됨
     @GetMapping("/hr/view1")
-    @ResponseBody
-    public String getMethodName(LoginDto loginDto) {
+    public String getMethodName(@ModelAttribute  LoginDto loginDto) {
         System.out.println("loginDto : " + loginDto.getId());
         System.out.println("loginDto : " + loginDto.getPw());
         return "main";

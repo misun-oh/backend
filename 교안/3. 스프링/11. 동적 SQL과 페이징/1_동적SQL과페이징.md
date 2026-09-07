@@ -315,4 +315,5 @@ public String list(@ModelAttribute EmpSearchCond cond, Model model) {
 | 정렬 | `ORDER BY ${enum.column} ${enum.direction}` (화이트리스트) |
 | `PageResult` | content + totalElements → totalPages/hasNext |
 
-> 다음(Day 12): 등록·수정처럼 **여러 SQL을 하나로 묶는** 트랜잭션.
+> 다음(Day 12): 지금까지 만든 화면에 로그인을 붙인다 — **로그인과 권한**.
+> (등록·수정처럼 여러 SQL을 하나로 묶는 **트랜잭션**은 **Day 13**에서.)

@@ -70,7 +70,7 @@ void 급여_보정(Integer input, int expected) {
 - `@MockitoBean Clock` 또는 생성자에 직접 주입.
 - 랜덤은 시드 고정 가능한 `Random(seed)` 를 주입.
 
-## 8. MockMvc / WebTestClient (Day 15 연계)
+## 8. MockMvc / WebTestClient (Day 16 연계)
 
 ```java
 @WebMvcTest(EmpController.class)

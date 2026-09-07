@@ -16,7 +16,7 @@
 | `emp-form.html` | 사원 등록·수정 폼 (검증 에러 표시 포함) | `GET/POST /emps/new`, `/emps/{id}/edit` |
 | `depts.html` | 부서 목록 (부서 추가 모달) | `GET /depts` |
 | `dashboard.html` | 대시보드 (통계 카드, 부서별 인원, 최근 입사자) | `GET /` |
-| `login.html` | 로그인 (가운데 카드, 아이디/비밀번호/로그인 유지/실패 배너) | `GET/POST /login` (Spring Security, Day 17) |
+| `login.html` | 로그인 (가운데 카드, 아이디/비밀번호/로그인 유지/실패 배너) | `GET/POST /login` (Day 12, 심화는 부록 3) |
 | `_menu.html` | 공통 메뉴(메뉴 폼) — 헤더/푸터 마크업. 각 페이지에 인라인 | Thymeleaf `fragments/menu` |
 
 > **에러 페이지**는 앱 공용이라 `templates/error.html` + `templates/error/{403,404,500}.html` 에 있습니다(Spring Boot 가 상태코드로 자동 선택).
@@ -30,7 +30,7 @@
 현재 페이지에 해당하는 `<nav>` 링크에만 `aria-current="page"` 를 남깁니다.
 
 - 다크 모드 토글(🌓)·모달·드롭다운 등은 `/js/component.js` 가 자동 초기화하므로 그대로 동작합니다.
-- 로그인은 프로토타입에선 `/login` 링크만. 실제 인증(모달/세션/JWT)은 **Day 17~19**에서.
+- 로그인은 프로토타입에선 `/login` 링크만. 실제 인증(모달/세션)은 **Day 12**에서, 토큰(JWT)은 **부록 2**에서.
 - Thymeleaf 전환 시 `_menu.html` → `templates/fragments/menu.html` 의 `th:fragment` 로 바꿔
   `<header th:replace="~{fragments/menu :: siteHeader('emp')}"></header>` 처럼 재사용합니다.
 

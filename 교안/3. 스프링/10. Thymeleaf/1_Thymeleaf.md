@@ -252,7 +252,7 @@ public String create(@ModelAttribute EmpForm form, RedirectAttributes ra) {
 **한꺼번에** 만들어 줍니다. 수정 화면에서는 `form` 에 기존 값이 들어 있으므로 자동으로 채워집니다.
 
 - 체크박스·라디오·셀렉트도 `th:field` 가 선택 상태(`checked`, `selected`)를 알아서 처리.
-- 검증 에러 표시(`#fields.hasErrors`, `th:errors`, `th:errorclass`)는 **Day 14**에서.
+- 검증 에러 표시(`#fields.hasErrors`, `th:errors`, `th:errorclass`)는 **Day 15**에서.
 
 ---
 
@@ -360,3 +360,4 @@ src/main/resources/static/
 | `static/` + `@{/css/...}` | 정적 리소스 |
 
 > 다음(Day 11): 지금 만든 사원 목록 화면에 검색·페이징을 붙인다 — **동적 SQL과 페이징**.
+> 로그인은 Day 12(로그인과 권한)에서.

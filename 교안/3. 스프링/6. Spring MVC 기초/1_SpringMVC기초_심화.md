@@ -38,7 +38,7 @@
 - **메서드**로 (`@ModelAttribute("depts") List<Dept> depts()`): 그 컨트롤러의 모든 뷰에 공통 모델 주입.
   드롭다운 목록처럼 매 화면에 필요한 데이터에 유용. `@ControllerAdvice` 에 두면 전역.
 
-바인딩 시 검증 실패를 잡으려면 바로 뒤에 `BindingResult` 파라미터(Day 14):
+바인딩 시 검증 실패를 잡으려면 바로 뒤에 `BindingResult` 파라미터(Day 15):
 ```java
 public String create(@Valid @ModelAttribute EmpForm form, BindingResult br) { ... }
 ```
@@ -63,7 +63,7 @@ public String create(@Valid @ModelAttribute EmpForm form, BindingResult br) { ..
 `ExceptionHandlerExceptionResolver`(`@ExceptionHandler`) → `ResponseStatusExceptionResolver`
 (`@ResponseStatus`, `ResponseStatusException`) → `DefaultHandlerExceptionResolver`(스프링 표준 예외 →
 상태코드) → 못 잡으면 `/error`(`BasicErrorController`, Whitelabel).
-전역 커스터마이징은 Day 14 `@ControllerAdvice`.
+전역 커스터마이징은 Day 15 `@ControllerAdvice`.
 
 ## 8. 테스트: `@WebMvcTest` + `MockMvc`
 
@@ -82,4 +82,4 @@ class EmpViewControllerTest {
     }
 }
 ```
-컨트롤러 계층만 로딩(서비스는 목). 자세한 사용은 Day 8·15.
+컨트롤러 계층만 로딩(서비스는 목). 자세한 사용은 Day 8·16.

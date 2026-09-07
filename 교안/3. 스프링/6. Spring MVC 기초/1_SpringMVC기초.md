@@ -88,7 +88,7 @@ public class EmpViewController {
 
 - `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` = `@RequestMapping(method=...)` 축약.
 - HTML `<form>` 은 GET·POST만 보냅니다. 그래서 화면에서는 삭제도 `POST .../delete` 로 표현
-  (REST API는 Day 15에서 `DELETE` 를 씁니다).
+  (REST API는 Day 16에서 `DELETE` 를 씁니다).
 
 ---
 
@@ -139,7 +139,7 @@ public String create(@ModelAttribute EmpForm form) {   // 필드명이 일치하
 |---|---|
 | `@RequestHeader("User-Agent")` | 헤더 |
 | `@CookieValue("JSESSIONID")` | 쿠키 |
-| `@RequestBody` | JSON 본문 → 객체 (Day 15) |
+| `@RequestBody` | JSON 본문 → 객체 (Day 16) |
 | `HttpServletRequest`, `Model`, `RedirectAttributes` | 그냥 파라미터로 선언하면 주입 |
 
 ---
@@ -192,7 +192,7 @@ public String create(@ModelAttribute EmpForm form, RedirectAttributes ra) {
 - **`@PathVariable` 이름과 `{}` 이름 불일치** → `@PathVariable("empId") Long id`.
 - **폼 필드명 ≠ DTO 필드명** → 바인딩 안 됨(값이 `null`). 이름을 맞춘다.
 - **POST 후 그대로 뷰 렌더링** → 새로고침 재전송. redirect(PRG)로.
-- **HTML form 으로 PUT/DELETE 시도** → 브라우저 form은 GET/POST만. 화면은 `POST .../delete`, API는 Day 15.
+- **HTML form 으로 PUT/DELETE 시도** → 브라우저 form은 GET/POST만. 화면은 `POST .../delete`, API는 Day 16.
 
 ---
 

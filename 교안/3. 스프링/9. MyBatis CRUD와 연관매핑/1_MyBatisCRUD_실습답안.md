@@ -182,4 +182,4 @@ public void modify(Long id, EmpForm form) {
     if (n == 0) throw new NoSuchElementException("수정 대상 사원 없음: " + id);
 }
 ```
-`update`/`delete` 의 반환값을 **반드시 확인**해, 0이면 "대상 없음"으로 예외 → Day 14에서 404로 변환.
+`update`/`delete` 의 반환값을 **반드시 확인**해, 0이면 "대상 없음"으로 예외 → Day 15에서 404로 변환.

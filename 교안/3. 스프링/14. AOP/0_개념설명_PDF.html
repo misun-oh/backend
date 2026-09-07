@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Day 14 · AOP — 개념 설명</title>
+<link rel="stylesheet" href="../_pdf-assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <span class="badge">Day 14</span>
+    <h1>AOP</h1>
+  </div>
+  <p class="doc-sub">Aspect-Oriented Programming — 흩어진 코드를 한곳에, 프록시로 끼워 넣기</p>
+
+  <div class="hook">
+    <b>Day 13에서 <code>@Transactional</code> 하나만 붙였는데 커밋·롤백이 자동으로 됐던 것, 기억하시나요?</b>
+    그 마법의 정체가 오늘 배울 AOP입니다 — 메서드에 코드를 한 줄도 안 더했는데 어떻게 트랜잭션이 걸렸는지, 원리를 직접 만들어 보며 풉니다.
+  </div>
+
+  <section class="block">
+    <h2><span class="num">1</span> 횡단 관심사 — 여러 곳에 반복되는 코드</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+  subgraph before["Before — 서비스마다 반복"]
+    direction TB
+    e1["EmpServiceImpl.register()<br/>로그·시간측정 + 업무로직 + 로그"]
+    e2["DeptServiceImpl.register()<br/>로그·시간측정 + 업무로직 + 로그"]
+    e3["OrderServiceImpl.create()<br/>로그·시간측정 + 업무로직 + 로그"]
+  end
+  subgraph after["After — 한곳에 모음(Aspect)"]
+    direction TB
+    asp["LoggingAspect<br/>@Around"]
+    e1b["EmpServiceImpl.register()<br/>업무로직만"]
+    e2b["DeptServiceImpl.register()<br/>업무로직만"]
+    e3b["OrderServiceImpl.create()<br/>업무로직만"]
+    asp -.감쌈.-> e1b
+    asp -.감쌈.-> e2b
+    asp -.감쌈.-> e3b
+  end
+      </pre>
+      <figcaption>로깅·시간측정·트랜잭션·권한 검사 — "업무 로직과 무관하지만 여러 메서드에 똑같이 필요한 것" = 횡단 관심사</figcaption>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">2</span> 어떻게 끼워 넣나 — 프록시</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart LR
+    caller["EmpController"] --> proxy["EmpService 프록시"]
+    proxy --> aspect["애스펙트: 전처리<br/>(로그·시간측정 시작)"]
+    aspect --> target["EmpServiceImpl<br/>(진짜 객체)"]
+    target --> aspect2["애스펙트: 후처리<br/>(반환값 로그·시간 출력)"]
+    aspect2 --> caller
+      </pre>
+      <figcaption>Controller가 주입받는 EmpService는 사실 <b>프록시</b> — 진짜 객체를 부르기 전·후에 애스펙트 코드가 끼어듦</figcaption>
+    </div>
+    <div class="chips">
+      <span class="chip">Aspect = 횡단 관심사 클래스</span>
+      <span class="chip">Advice = 언제 무엇을 할지</span>
+      <span class="chip">Pointcut = 어떤 메서드에 적용할지</span>
+      <span class="chip">Weaving = 엮는 과정(런타임 프록시)</span>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">3</span> Advice — 언제 코드가 실행되나</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart LR
+  b["@Before<br/>실행 전"] --> call["대상 메서드 실행"]
+  call -->|"정상 반환"| ar["@AfterReturning"]
+  call -->|"예외 발생"| at["@AfterThrowing"]
+  ar --> af["@After (항상)"]
+  at --> af
+  around["@Around — 전체를 감싸고 proceed()로 직접 호출<br/>(시간측정·재시도·값 변경에 사용)"]
+      </pre>
+      <figcaption><code>@Around</code>가 가장 강력 — 실행 전후를 모두 제어하고, <code>proceed()</code>를 직접 호출</figcaption>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="num">4</span> 한계 — 같은 클래스 내부 호출</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+  ctl["Controller"] -->|"프록시 통과 → @Timed 동작"| a["a() 호출"]
+  a -->|"this.b() — 프록시 안 거침"| b["b() 호출 — @Timed 무시됨!"]
+  style b stroke:#b3541e,stroke-width:2px
+      </pre>
+      <figcaption>같은 객체 안에서 <code>this.b()</code> 로 부르면 프록시를 건너뛰어 어드바이스가 안 걸림 — Day 13 트랜잭션에서 겪었을 수도 있는 그 현상</figcaption>
+    </div>
+    <div class="cols2">
+      <div class="card good">
+        <h4>해결책</h4>
+        <ul>
+          <li>대상 메서드를 <b>다른 빈</b>으로 분리(가장 깔끔)</li>
+          <li><code>ObjectProvider</code>로 자기 자신을 프록시로 주입</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h4>스프링 AOP 한계 정리</h4>
+        <ul>
+          <li>같은 클래스 내부 호출(self-invocation)엔 안 걸림</li>
+          <li><code>private</code> 메서드엔 안 걸림(프록시 기반이라 public만)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="takeaway">
+    <h2>그래서 — <code>@Transactional</code>도 AOP다</h2>
+    <ul>
+      <li><code>@Transactional</code> → 프록시가 앞에서 트랜잭션 시작, 정상 반환 시 커밋, 예외 시 롤백</li>
+      <li><code>@Cacheable</code> → 캐시에 있으면 진짜 메서드 호출 없이 반환</li>
+      <li><code>@PreAuthorize</code>(부록 3) → 권한 없으면 진짜 메서드 호출 전에 차단</li>
+      <li>셋 다 <b>"메서드 호출을 가로채는 프록시"</b> 라는 같은 원리 — Day 13에서 이미 써 봤던 그 동작의 정체입니다.</li>
+    </ul>
+  </div>
+
+  <footer class="print-tip">인쇄 미리보기(Ctrl+P) → "PDF로 저장"으로 내보내면 됩니다. 본문 교안은 1_AOP.md 참고.</footer>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose",
+    flowchart: { curve: "basis" } });
+</script>
+</body>
+</html>

@@ -116,7 +116,7 @@ public String delete(@PathVariable Long id, RedirectAttributes ra) {
 ```
 
 HTML `<form>` 은 GET/POST만 지원하므로 삭제를 `POST .../delete` 로 표현.
-(REST `DELETE` 메서드는 Day 15 API에서.)
+(REST `DELETE` 메서드는 Day 16 API에서.)
 
 ---
 

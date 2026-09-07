@@ -12,7 +12,7 @@
 | `leak-detection-threshold` | 커넥션 반납 안 됨 감지 | 개발/의심 시 5000~20000ms |
 
 풀 고갈(`Connection is not available`)은 대개 **트랜잭션이 너무 길거나** 커넥션을 안 닫는(MyBatis에선
-드묾) 것. 슬로우 쿼리·외부 API를 트랜잭션 안에서 호출하지 않기(Day 12).
+드묾) 것. 슬로우 쿼리·외부 API를 트랜잭션 안에서 호출하지 않기(Day 13).
 
 ## 2. 여러 DataSource
 

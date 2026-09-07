@@ -18,7 +18,7 @@ Boot 3.x 자료를 볼 때 달라지는 점을 여기 모읍니다. 각 챕터�
 | mybatis-spring-boot-starter | **4.0.1** | Boot 4.0 지원. MyBatis 3.5 / MyBatis-Spring 4.0. **BOM이 관리 안 하므로 버전 명시** |
 | JUnit (Jupiter/Platform) | **6.0.x** | `spring-boot-starter-test` 가 가져옴. **버전 안 박음** |
 | Jackson | **3.x** (Boot 4 기본) | 그룹·패키지 `com.fasterxml.jackson` → `tools.jackson` |
-| JWT (jjwt) | `io.jsonwebtoken:jjwt-*` `0.13.x` | Day 19에서 명시적으로 추가 (BOM 관리 아님) |
+| JWT (jjwt) | `io.jsonwebtoken:jjwt-*` `0.13.x` | 부록 2. JWT에서 명시적으로 추가 (BOM 관리 아님) |
 
 ---
 
@@ -43,9 +43,10 @@ repositories { mavenCentral() }
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'      // ← 3.x: starter-web
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'  // Day 14
-    implementation 'org.springframework.boot:spring-boot-starter-security'    // Day 17~
+    implementation 'org.springframework.boot:spring-boot-starter-validation'  // Day 16
+    implementation 'org.springframework.security:spring-security-crypto'      // Day 12 (BCrypt만, Security 전체 아님)
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1' // Day 6~
+    // implementation 'org.springframework.boot:spring-boot-starter-security' // 부록 3~ (선택)
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -53,8 +54,8 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'    // Day 17~18
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // testImplementation 'org.springframework.security:spring-security-test' // 부록 3~4 (선택)
 }
 
 tasks.named('test') { useJUnitPlatform() }
@@ -76,7 +77,7 @@ tasks.named('test') { useJUnitPlatform() }
 
 ---
 
-## 3. 테스트 (Day 10 · 15 · 18)
+## 3. 테스트 (Day 10 · 16, 부록 4)
 
 | 3.x | 4.0 | import |
 |---|---|---|
@@ -91,7 +92,7 @@ tasks.named('test') { useJUnitPlatform() }
 
 ---
 
-## 4. Jackson 3 (Day 15)
+## 4. Jackson 3 (Day 16)
 
 - 기본이 **Jackson 3**. 클래스(프로그램적 사용)의 패키지가 바뀜:
   - `com.fasterxml.jackson.databind.ObjectMapper` → **`tools.jackson.databind.ObjectMapper`**
@@ -105,7 +106,7 @@ tasks.named('test') { useJUnitPlatform() }
 
 ---
 
-## 5. Spring Security 7 (Day 17~19)
+## 5. Spring Security 7 (부록 2~4, 선택)
 
 - `http.authorizeRequests()` / `antMatchers()` / `.and()` — **전부 제거**(6.x에서 deprecated 되던 것).
   → **람다 DSL + `authorizeHttpRequests` + `requestMatchers`** 만 사용:
@@ -127,9 +128,9 @@ tasks.named('test') { useJUnitPlatform() }
 - `PasswordEncoder`(BCrypt) · `UserDetailsService` · `InMemoryUserDetailsManager` — 그대로.
 - 이 교안의 `SecurityConfig.java` 는 **이미 람다 DSL** 이라 그대로 SS7에서 동작.
 - (remember-me/세션을 Jackson으로 직렬화할 때만) `SecurityJackson2Modules` → `SecurityJacksonModules`.
-- **Thymeleaf `sec:` (Day 18)**: `thymeleaf-extras-springsecurity6` 를 명시 추가(스타터가 안 끌고 옴).
+- **Thymeleaf `sec:` (부록 4)**: `thymeleaf-extras-springsecurity6` 를 명시 추가(스타터가 안 끌고 옴).
   버전은 부트 BOM. `sec:` 가 렌더링에서 무시되면 SS7 대응 아티팩트가 따로 나왔는지 릴리스 노트 확인.
-- **JWT (Day 19)**: `jjwt` 가 아직 Jackson 3 미지원 → `jjwt-jackson` **대신 `jjwt-gson`**(0.13.0). Gson transitively 포함.
+- **JWT (부록 2)**: `jjwt` 가 아직 Jackson 3 미지원 → `jjwt-jackson` **대신 `jjwt-gson`**(0.13.0). Gson transitively 포함.
 
 ---
 
