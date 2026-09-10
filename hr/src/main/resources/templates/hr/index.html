@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>사원 목록 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <header th:replace="~{fragments/menu :: siteHeader('emp')}"></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head">
+      <div>
+        <h1>사원 목록</h1>
+        <p>전체 <span th:text="${totalEmp}">0</span>명 · 재직 <span th:text="${activeEmp}">0</span>명</p>
+      </div>
+      <a class="btn btn--primary" th:href="@{/emps/new}">+ 사원 등록</a>
+    </div>
+
+    <div class="alert alert--success mb-4" role="status" th:if="${msg}">
+      <span class="alert__icon" aria-hidden="true">✓</span>
+      <div class="alert__body" th:text="${msg}"></div>
+      <button class="alert__close" type="button" data-dismiss="alert" aria-label="닫기">×</button>
+    </div>
+
+    <form class="toolbar" method="get" th:action="@{/emps}" th:object="${cond}">
+      <div class="input-group">
+        <input class="input" type="search" th:field="*{keyword}" placeholder="이름 · 이메일" aria-label="검색어" style="min-width: 240px">
+        <button class="btn btn--secondary" type="submit">검색</button>
+      </div>
+      <select class="select" th:field="*{deptId}" aria-label="부서" style="width: 150px">
+        <option value="">전체 부서</option>
+        <option th:each="d : ${depts}" th:value="${d.deptId}" th:text="${d.deptName}"></option>
+      </select>
+      <label class="switch">
+        <input type="checkbox" th:field="*{workingOnly}">
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span class="switch__label">재직자만</span>
+      </label>
+      <span class="spacer"></span>
+      <select class="select" th:field="*{sort}" aria-label="정렬" style="width: 130px">
+        <option value="hireDate">입사일순</option>
+        <option value="name">이름순</option>
+        <option value="salary">급여순</option>
+      </select>
+      <a class="btn btn--ghost btn--sm" th:href="@{/emps}">초기화</a>
+    </form>
+
+    <div class="empty-state" th:if="${page.empty}">
+      <p class="empty-state__icon" aria-hidden="true">📭</p>
+      <p class="empty-state__title">조건에 맞는 사원이 없습니다</p>
+      <p class="empty-state__desc">검색어나 필터를 바꿔 다시 시도해 보세요.</p>
+      <a class="btn btn--secondary btn--sm" th:href="@{/emps}">필터 초기화</a>
+    </div>
+
+    <div class="table-wrap" th:unless="${page.empty}">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>사번</th><th>이름</th><th>부서</th><th>직급</th><th>입사일</th><th>상태</th><th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="e : ${page.content}">
+            <td th:text="${e.empId}">200</td>
+            <td><a th:href="@{/emps/{id}(id=${e.empId})}" th:text="${e.empName}">이름</a></td>
+            <td th:text="${e.deptName} ?: '미배정'">부서</td>
+            <td th:text="${e.jobName}">직급</td>
+            <td th:text="${#temporals.format(e.hireDate, 'yyyy-MM-dd')}">입사일</td>
+            <td>
+              <span class="badge badge--success badge--dot" th:if="${e.active}">재직</span>
+              <span class="badge badge--danger badge--dot" th:unless="${e.active}">퇴사</span>
+            </td>
+            <td class="row-actions">
+              <a th:href="@{/emps/{id}(id=${e.empId})}">상세</a>
+              <a th:href="@{/emps/{id}/edit(id=${e.empId})}">수정</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <nav class="pagination mt-6" aria-label="페이지" th:if="${page.totalPages > 1}">
+      <a class="pagination__item" aria-label="이전"
+         th:href="@{/emps(keyword=${cond.keyword}, deptId=${cond.deptId}, workingOnly=${cond.workingOnly}, sort=${cond.sort}, page=${page.page - 1})}"
+         th:if="${page.hasPrev}">‹</a>
+      <a class="pagination__item" th:each="i : ${#numbers.sequence(page.startPage, page.endPage)}"
+         th:href="@{/emps(keyword=${cond.keyword}, deptId=${cond.deptId}, workingOnly=${cond.workingOnly}, sort=${cond.sort}, page=${i})}"
+         th:text="${i}"
+         th:aria-current="${i == page.page} ? 'page' : null">1</a>
+      <a class="pagination__item" aria-label="다음"
+         th:href="@{/emps(keyword=${cond.keyword}, deptId=${cond.deptId}, workingOnly=${cond.workingOnly}, sort=${cond.sort}, page=${page.page + 1})}"
+         th:if="${page.hasNext}">›</a>
+    </nav>
+  </main>
+
+  <footer th:replace="~{fragments/menu :: siteFooter}"></footer>
+</body>
+</html>

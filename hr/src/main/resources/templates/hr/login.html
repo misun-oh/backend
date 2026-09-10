@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <main class="auth-wrap">
+    <div class="auth-card stack" style="--gap: var(--space-5)">
+      <div class="text-center stack" style="--gap: var(--space-1)">
+        <p style="font-size: var(--text-2xl)">👔</p>
+        <h1 style="font-size: var(--text-xl)">사원관리 시스템</h1>
+        <p class="muted" style="font-size: var(--text-sm)">사내 계정으로 로그인하세요. (admin / 1234)</p>
+      </div>
+
+      <div class="alert alert--danger" role="alert" th:if="${loginError}">
+        <span class="alert__icon" aria-hidden="true">!</span>
+        <div class="alert__body" th:text="${loginError}"></div>
+      </div>
+
+      <form class="stack" style="--gap: var(--space-4)" th:action="@{/login(redirectURL=${param.redirectURL})}"
+            th:object="${loginForm}" method="post">
+        <div class="field" th:classappend="${#fields.hasErrors('username')} ? 'field--error'">
+          <label class="label" for="username">아이디</label>
+          <input class="input" id="username" th:field="*{username}" autocomplete="username" placeholder="사번 또는 이메일" autofocus>
+          <p class="form-hint" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('password')} ? 'field--error'">
+          <label class="label" for="password">비밀번호</label>
+          <input class="input" id="password" th:field="*{password}" type="password" autocomplete="current-password">
+          <p class="form-hint" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></p>
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">로그인</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

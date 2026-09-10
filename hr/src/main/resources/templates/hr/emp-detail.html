@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${emp.empName} + ' · 사원관리'">사원 상세 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <header th:replace="~{fragments/menu :: siteHeader('emp')}"></header>
+
+  <main class="app-main container">
+    <nav class="breadcrumb mb-4" aria-label="현재 위치">
+      <a th:href="@{/emps}">사원 목록</a>
+      <span aria-current="page" th:text="${emp.empName}">이름</span>
+    </nav>
+
+    <div class="alert alert--success mb-4" role="status" th:if="${msg}">
+      <span class="alert__icon" aria-hidden="true">✓</span>
+      <div class="alert__body" th:text="${msg}"></div>
+      <button class="alert__close" type="button" data-dismiss="alert" aria-label="닫기">×</button>
+    </div>
+
+    <!-- 프로필 -->
+    <div class="card" style="padding: var(--space-6)">
+      <div class="profile">
+        <span class="avatar" th:text="${#strings.substring(emp.empName, 0, 1)}">사</span>
+        <div class="spacer">
+          <p class="profile__name">
+            <span th:text="${emp.empName}">이름</span>
+            <span class="badge badge--success badge--dot" th:if="${emp.active}">재직</span>
+            <span class="badge badge--danger badge--dot" th:unless="${emp.active}">퇴사</span>
+          </p>
+          <p class="profile__sub">
+            <span th:text="${emp.deptName} ?: '미배정'">부서</span> ·
+            <span th:text="${emp.jobName}">직급</span> ·
+            사번 <span th:text="${emp.empId}">0</span>
+          </p>
+        </div>
+        <div class="row" style="--gap: var(--space-2)">
+          <a class="btn btn--secondary" th:href="@{/emps/{id}/edit(id=${emp.empId})}">수정</a>
+          <button class="btn btn--danger" type="button" data-modal-open="delete-modal">삭제</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상세 탭 -->
+    <div class="tabs mt-6" data-tabs>
+      <div class="tabs__list" role="tablist" aria-label="사원 정보">
+        <button type="button" class="tabs__tab" role="tab" id="t-basic" aria-controls="p-basic" aria-selected="true">기본 정보</button>
+        <button type="button" class="tabs__tab" role="tab" id="t-pay" aria-controls="p-pay" aria-selected="false">급여</button>
+        <button type="button" class="tabs__tab" role="tab" id="t-org" aria-controls="p-org" aria-selected="false">조직</button>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-basic" aria-labelledby="t-basic">
+        <table class="info-table">
+          <tr><th>사번</th><td th:text="${emp.empId}">0</td></tr>
+          <tr><th>이름</th><td th:text="${emp.empName}"></td></tr>
+          <tr><th>이메일</th><td th:text="${emp.email}"></td></tr>
+          <tr><th>전화</th><td th:text="${emp.phone} ?: '-'"></td></tr>
+          <tr><th>입사일</th><td th:text="${#temporals.format(emp.hireDate, 'yyyy-MM-dd')} + ' (근속 ' + ${tenureYears} + '년)'"></td></tr>
+          <tr>
+            <th>재직 여부</th>
+            <td>
+              <span class="badge badge--success" th:if="${emp.active}">재직</span>
+              <span class="badge badge--danger" th:unless="${emp.active}">퇴사</span>
+            </td>
+          </tr>
+          <tr th:if="${emp.memo}"><th>비고</th><td th:text="${emp.memo}"></td></tr>
+        </table>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-pay" aria-labelledby="t-pay" hidden>
+        <table class="info-table">
+          <tr><th>기본급(월)</th><td th:text="${#numbers.formatInteger(emp.salary, 1, 'COMMA')} + '원'"></td></tr>
+          <tr><th>예상 연봉</th><td th:text="${#numbers.formatInteger(emp.salary * 12, 1, 'COMMA')} + '원'"><span class="muted">(기본급 × 12)</span></td></tr>
+        </table>
+      </div>
+
+      <div class="tabs__panel" role="tabpanel" id="p-org" aria-labelledby="t-org" hidden>
+        <table class="info-table">
+          <tr><th>부서</th><td th:text="${emp.deptNameOrUnassigned} + ' (부서번호 ' + ${emp.deptId} + ')'"></td></tr>
+          <tr><th>직급</th><td th:text="${emp.jobName} + ' (' + ${emp.jobCode} + ')'"></td></tr>
+          <tr>
+            <th>관리자</th>
+            <td>
+              <a th:if="${emp.managerId}" th:href="@{/emps/{id}(id=${emp.managerId})}" th:text="${emp.managerName}">관리자</a>
+              <span th:unless="${emp.managerId}" class="muted">없음</span>
+            </td>
+          </tr>
+          <tr>
+            <th>부하 직원</th>
+            <td>
+              <div class="stack" style="--gap: var(--space-1)" th:if="${not #lists.isEmpty(subordinates)}">
+                <a th:each="s : ${subordinates}" th:href="@{/emps/{id}(id=${s.empId})}"
+                   th:text="${s.empName} + ' · ' + ${s.jobName}">이름 · 직급</a>
+              </div>
+              <span class="muted" th:if="${#lists.isEmpty(subordinates)}">없음</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{fragments/menu :: siteFooter}"></footer>
+
+  <!-- 삭제 확인 모달 -->
+  <div class="modal" id="delete-modal" data-modal hidden>
+    <div class="modal__overlay" data-modal-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="delete-modal-title" style="width: min(420px, 100%)">
+      <button class="modal__close" type="button" data-modal-close aria-label="닫기">×</button>
+      <h3 class="modal__title" id="delete-modal-title">사원 삭제</h3>
+      <form th:action="@{/emps/{id}/delete(id=${emp.empId})}" method="post">
+        <div class="modal__body">
+          <p><strong th:text="${emp.empName} + '(' + ${emp.empId} + ')'"></strong> 사원을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.</p>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" type="button" data-modal-close>취소</button>
+          <button class="btn btn--danger" type="submit">삭제</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

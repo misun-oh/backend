@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hr.mapper.JobMapper">
+
+    <resultMap id="jobResultMap" type="com.example.hr.domain.Job">
+        <id property="jobCode" column="JOB_CODE"/>
+        <result property="jobName" column="JOB_NAME"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="jobResultMap">
+        SELECT JOB_CODE, JOB_NAME FROM JOB ORDER BY JOB_CODE ASC
+    </select>
+
+</mapper>

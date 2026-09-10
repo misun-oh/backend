@@ -26,6 +26,18 @@
 </insert>
 
 <update id="update">
+  <!--
+    지금은 넘어온 필드를 전부 SET한다 -> 호출하는 쪽이 모든 값을 채워서 넘겨야 한다.
+    <set> + <if test="필드 != null"> 로 바꾸면 값이 있는 컬럼만 SET돼서 "부분 수정"이 가능하다:
+      <set>
+        <if test="empName != null">EMP_NAME = #{empName},</if>
+        <if test="email != null">EMAIL = #{email},</if>
+        ...
+      </set>
+    단, 이렇게 하면 "null이면 안 건드림"과 "진짜 null로 지움"을 구분할 수 없게 된다
+    (예: 관리자를 없애려고 managerId=null을 보내도 무시됨). 그리고 대상 필드가
+    int/boolean 같은 원시타입이면 안 되고 Integer/Boolean 래퍼여야 "값 없음"이 구분된다.
+  -->
   UPDATE EMP
   SET EMP_NAME = #{empName}, EMAIL = #{email}, DEPT_ID = #{deptId},
       SALARY = #{salary}, HIRE_DATE = #{hireDate}
@@ -72,6 +84,40 @@ emp.getEmpId();   // ← DB가 채운 값이 여기로 들어옴 (INSERT 후 자
 - `keyProperty` = 키를 담을 **자바 필드명**.
 - 시퀀스 방식(Oracle 등)은 `<selectKey>`.
 - 이 과정의 실습은 상황에 따라 두 방식 다 다뤄 봅니다(HR 원본은 직접 채움, 별도 실습 테이블은 auto).
+
+### 참고 — 원본 `EMP` 테이블도 진짜 `AUTO_INCREMENT`로 바꾸고 싶다면
+
+`EMP_ID`에 들어있는 값(`'200'`, `'201'` …)은 사실 숫자인데 타입만 `VARCHAR(3)`이고 `PRIMARY KEY`도
+`AUTO_INCREMENT`도 안 걸려 있습니다. `useGeneratedKeys`를 원본 테이블로 직접 실습해 보고 싶다면
+아래처럼 타입을 바꿀 수 있습니다(값이 전부 숫자 문자열이라 `BIGINT`로 그대로 변환됩니다).
+
+```sql
+-- 1) EMP_ID를 숫자 타입으로 바꾸고, PK + AUTO_INCREMENT를 건다
+ALTER TABLE EMP
+    MODIFY COLUMN EMP_ID BIGINT NOT NULL AUTO_INCREMENT,
+    ADD PRIMARY KEY (EMP_ID);
+
+-- 2) 자기 자신을 참조하는 MANAGER_ID도 같은 타입으로 맞춘다
+ALTER TABLE EMP
+    MODIFY COLUMN MANAGER_ID BIGINT NULL;
+
+-- 3) 다음 INSERT가 기존 최댓값(220) 다음부터 시작하도록 카운터를 맞춘다
+ALTER TABLE EMP AUTO_INCREMENT = 221;
+
+-- 4) (선택) 관리자-부하 자기참조 FK까지 걸고 싶다면
+ALTER TABLE EMP
+    ADD CONSTRAINT FK_EMP_MANAGER FOREIGN KEY (MANAGER_ID) REFERENCES EMP (EMP_ID);
+```
+
+- `MODIFY COLUMN`은 **컬럼 이름은 그대로, 타입/제약만** 바꿉니다(4.3절 `ALTER TABLE` 참고 — SQL 과정
+  `6. DDL/1_DDL.md`와 같은 문법).
+- 순서가 중요합니다: `AUTO_INCREMENT`를 걸려면 그 컬럼이 **키(PK/UNIQUE/INDEX)** 여야 하므로, `MODIFY`와
+  `ADD PRIMARY KEY`를 **한 `ALTER TABLE` 문에 같이** 써야 중간 단계에서 오류가 나지 않습니다.
+- `DEPT_ID`(`'D1'`)·`JOB_CODE`(`'J1'`)는 문자가 섞인 **코드값**이라 이 변환 대상이 아닙니다 — 순수하게
+  숫자만 들어있는 `EMP_ID`(그리고 그걸 참조하는 `MANAGER_ID`)만 해당됩니다.
+- 이 ALTER는 **원본 `EMP` 테이블 자체를 바꾸는 것**이라, SQL 과정에서 `EMP_ID`를 문자열로 다루는
+  실습(예: `WHERE EMP_ID = '200'`)을 앞으로도 쓸 계획이면 원본 대신 `EMP` 를 복사한 별도 테이블에서
+  연습하는 걸 권장합니다(`CREATE TABLE EMP_AUTO AS SELECT * FROM EMP;` 후 위 스크립트를 `EMP_AUTO`에 적용).
 
 ---
 

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="siteHeader(active)" class="site-header">
+  <div class="site-header__inner container container--wide">
+    <a class="site-header__brand" th:href="@{/emps}">👔 사원관리</a>
+    <nav class="site-nav hide-mobile" aria-label="주요 메뉴">
+      <a th:href="@{/emps}" th:aria-current="${active == 'emp'} ? 'page' : null">사원 목록</a>
+      <a th:href="@{/depts}" th:aria-current="${active == 'dept'} ? 'page' : null">부서</a>
+      <a th:href="@{/}" th:aria-current="${active == 'dashboard'} ? 'page' : null">대시보드</a>
+    </nav>
+    <span class="spacer"></span>
+    <button class="btn btn--ghost btn--sm" type="button" data-theme-toggle aria-label="다크 모드 전환">🌓</button>
+    <span class="muted" style="font-size: var(--text-sm); margin-right: var(--space-2)"
+          th:if="${loginMember}" th:text="${loginMember.name}">담당자</span>
+    <a class="btn btn--ghost btn--sm" th:if="${loginMember}" th:href="@{/logout}">로그아웃</a>
+    <a class="btn btn--primary btn--sm" th:unless="${loginMember}" th:href="@{/login}">로그인</a>
+  </div>
+</header>
+
+<footer th:fragment="siteFooter" class="site-footer">
+  <div class="container container--wide row row--between">
+    <p>👔 사원관리 · 학습용 프로토타입</p>
+    <span class="muted" style="font-size: var(--text-sm)">디자인 시스템: /css/basic.css</span>
+  </div>
+</footer>
+
+</body>
+</html>

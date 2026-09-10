@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>부서 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <header th:replace="~{fragments/menu :: siteHeader('dept')}"></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head">
+      <div>
+        <h1>부서</h1>
+        <p>전체 <span th:text="${#lists.size(depts)}">0</span>개 부서</p>
+      </div>
+      <button class="btn btn--primary" type="button" data-modal-open="dept-modal">+ 부서 추가</button>
+    </div>
+
+    <div class="alert alert--success mb-4" role="status" th:if="${msg}">
+      <span class="alert__icon" aria-hidden="true">✓</span>
+      <div class="alert__body" th:text="${msg}"></div>
+      <button class="alert__close" type="button" data-dismiss="alert" aria-label="닫기">×</button>
+    </div>
+    <div class="alert alert--danger mb-4" role="alert" th:if="${errorMsg}">
+      <span class="alert__icon" aria-hidden="true">!</span>
+      <div class="alert__body" th:text="${errorMsg}"></div>
+      <button class="alert__close" type="button" data-dismiss="alert" aria-label="닫기">×</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table table--striped">
+        <thead>
+          <tr><th>코드</th><th>부서명</th><th>근무지</th><th>인원</th><th>평균 급여</th><th>관리</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="d : ${depts}">
+            <td th:text="'D' + ${d.deptId}"></td>
+            <td th:text="${d.deptName}"></td>
+            <td th:text="${d.location} ?: '-'"></td>
+            <td th:text="${d.memberCount} + '명'"></td>
+            <td th:text="${d.avgSalaryDisplay}"></td>
+            <td class="row-actions">
+              <a th:href="'#dept-edit-modal-' + ${d.deptId}"
+                 th:attr="data-modal-open='dept-edit-modal-' + ${d.deptId}">수정</a>
+              <a href="#" th:attr="onclick=|return confirmDelete(${d.deptId})|">삭제</a>
+              <form th:id="'dept-delete-form-' + ${d.deptId}" th:action="@{/depts/{id}/delete(id=${d.deptId})}" method="post" hidden></form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer th:replace="~{fragments/menu :: siteFooter}"></footer>
+
+  <!-- 부서 추가 모달 -->
+  <div class="modal" id="dept-modal" data-modal hidden>
+    <div class="modal__overlay" data-modal-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="dept-modal-title" style="width: min(440px, 100%)">
+      <button class="modal__close" type="button" data-modal-close aria-label="닫기">×</button>
+      <h3 class="modal__title" id="dept-modal-title">부서 추가</h3>
+      <form th:action="@{/depts}" th:object="${deptForm}" method="post">
+        <div class="modal__body stack" style="--gap: var(--space-4)">
+          <div class="field" th:classappend="${#fields.hasErrors('deptName')} ? 'field--error'">
+            <label class="label" for="d-name">부서명 *</label>
+            <input class="input" id="d-name" th:field="*{deptName}" placeholder="신사업개발부">
+            <p class="form-hint" th:if="${#fields.hasErrors('deptName')}" th:errors="*{deptName}"></p>
+          </div>
+          <div class="field">
+            <label class="label" for="d-loc">근무지</label>
+            <select class="select" id="d-loc" th:field="*{location}">
+              <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}"></option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" type="button" data-modal-close>취소</button>
+          <button class="btn btn--primary" type="submit">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 부서 수정 모달 (부서마다 하나) -->
+  <div class="modal" th:id="'dept-edit-modal-' + ${d.deptId}" data-modal hidden th:each="d : ${depts}">
+    <div class="modal__overlay" data-modal-close></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" tabindex="-1" th:attr="aria-labelledby='dept-edit-modal-title-' + ${d.deptId}" style="width: min(440px, 100%)">
+      <button class="modal__close" type="button" data-modal-close aria-label="닫기">×</button>
+      <h3 class="modal__title" th:id="'dept-edit-modal-title-' + ${d.deptId}">부서 수정</h3>
+
+      <!-- 방금 이 부서를 수정하다 검증 오류가 난 경우: 오류 메시지가 붙은 deptForm 을 그대로 렌더링 -->
+      <form th:if="${openEditModalId != null and openEditModalId == d.deptId}"
+            th:action="@{/depts/{id}(id=${d.deptId})}" th:object="${deptForm}" method="post">
+        <div class="modal__body stack" style="--gap: var(--space-4)">
+          <div class="field" th:classappend="${#fields.hasErrors('deptName')} ? 'field--error'">
+            <label class="label">부서명 *</label>
+            <input class="input" th:field="*{deptName}">
+            <p class="form-hint" th:if="${#fields.hasErrors('deptName')}" th:errors="*{deptName}"></p>
+          </div>
+          <div class="field">
+            <label class="label">근무지</label>
+            <select class="select" th:field="*{location}">
+              <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}"></option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" type="button" data-modal-close>취소</button>
+          <button class="btn btn--primary" type="submit">저장</button>
+        </div>
+      </form>
+
+      <!-- 평상시: 현재 부서 값 그대로 표시 -->
+      <form th:unless="${openEditModalId != null and openEditModalId == d.deptId}"
+            th:action="@{/depts/{id}(id=${d.deptId})}" method="post">
+        <div class="modal__body stack" style="--gap: var(--space-4)">
+          <div class="field">
+            <label class="label">부서명 *</label>
+            <input class="input" name="deptName" th:value="${d.deptName}">
+          </div>
+          <div class="field">
+            <label class="label">근무지</label>
+            <select class="select" name="location">
+              <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}" th:selected="${loc == d.location}"></option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" type="button" data-modal-close>취소</button>
+          <button class="btn btn--primary" type="submit">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function confirmDelete(deptId) {
+      if (confirm("부서를 삭제하시겠습니까?")) {
+        document.getElementById("dept-delete-form-" + deptId).submit();
+      }
+      return false;
+    }
+  </script>
+  <script th:if="${openAddModal}">
+    document.addEventListener("DOMContentLoaded", function () { UI.modal.open("dept-modal"); });
+  </script>
+  <script th:if="${openEditModalId}" th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+      UI.modal.open("dept-edit-modal-" + /*[[${openEditModalId}]]*/ "0");
+    });
+  </script>
+</body>
+</html>

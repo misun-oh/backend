@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${empForm.new} ? '사원 등록 · 사원관리' : '사원 수정 · 사원관리'">사원 등록 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <header th:replace="~{fragments/menu :: siteHeader('emp')}"></header>
+
+  <main class="app-main container">
+    <nav class="breadcrumb mb-4" aria-label="현재 위치">
+      <a th:href="@{/emps}">사원 목록</a>
+      <span aria-current="page" th:text="${empForm.new} ? '사원 등록' : '사원 수정'">사원 등록</span>
+    </nav>
+
+    <div class="page-head">
+      <div>
+        <h1 th:text="${empForm.new} ? '사원 등록' : '사원 수정'">사원 등록</h1>
+        <p th:text="${empForm.new} ? '새 사원의 기본 정보를 입력합니다.' : '사원 정보를 수정합니다.'">안내</p>
+        <span class="muted">* 표시는 필수 항목</span>
+      </div>
+    </div>
+
+    <form class="card" style="padding: var(--space-6)"
+          th:action="${empForm.new} ? @{/emps} : @{/emps/{id}(id=${empForm.empId})}"
+          th:object="${empForm}" method="post">
+      <div class="form-grid">
+        <div class="field" th:classappend="${#fields.hasErrors('empName')} ? 'field--error'">
+          <label class="label" for="f-name">이름 *</label>
+          <input class="input" id="f-name" th:field="*{empName}" placeholder="홍길동">
+          <p class="form-hint" th:if="${#fields.hasErrors('empName')}" th:errors="*{empName}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('phone')} ? 'field--error'">
+          <label class="label" for="f-phone">전화번호</label>
+          <input class="input" id="f-phone" th:field="*{phone}" placeholder="010-0000-0000">
+        </div>
+
+        <div class="field" th:classappend="${#fields.hasErrors('email')} ? 'field--error'">
+          <label class="label" for="f-email">이메일 *</label>
+          <input class="input" id="f-email" th:field="*{email}" placeholder="hong@company.com">
+          <p class="form-hint" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('salary')} ? 'field--error'">
+          <label class="label" for="f-salary">기본급(월) *</label>
+          <input class="input" id="f-salary" th:field="*{salary}" type="number" min="0" step="10000">
+          <p class="form-hint" th:if="${#fields.hasErrors('salary')}" th:errors="*{salary}"></p>
+        </div>
+
+        <div class="field" th:classappend="${#fields.hasErrors('deptId')} ? 'field--error'">
+          <label class="label" for="f-dept">부서 *</label>
+          <select class="select" id="f-dept" th:field="*{deptId}">
+            <option value="">선택하세요</option>
+            <option th:each="d : ${depts}" th:value="${d.deptId}" th:text="${d.deptName}"></option>
+          </select>
+          <p class="form-hint" th:if="${#fields.hasErrors('deptId')}" th:errors="*{deptId}"></p>
+        </div>
+        <div class="field" th:classappend="${#fields.hasErrors('jobCode')} ? 'field--error'">
+          <label class="label" for="f-job">직급 *</label>
+          <select class="select" id="f-job" th:field="*{jobCode}">
+            <option value="">선택하세요</option>
+            <option th:each="j : ${jobs}" th:value="${j.jobCode}" th:text="${j.jobName}"></option>
+          </select>
+          <p class="form-hint" th:if="${#fields.hasErrors('jobCode')}" th:errors="*{jobCode}"></p>
+        </div>
+
+        <div class="field" th:classappend="${#fields.hasErrors('hireDate')} ? 'field--error'">
+          <label class="label" for="f-hire">입사일 *</label>
+          <input class="input" id="f-hire" th:field="*{hireDate}" type="date">
+          <p class="form-hint" th:if="${#fields.hasErrors('hireDate')}" th:errors="*{hireDate}"></p>
+        </div>
+        <div class="field">
+          <label class="label" for="f-mgr">관리자</label>
+          <select class="select" id="f-mgr" th:field="*{managerId}">
+            <option value="">없음</option>
+            <option th:each="m : ${managers}" th:value="${m.empId}" th:text="${m.managerOptionLabel}"></option>
+          </select>
+        </div>
+
+        <div class="field">
+          <span class="label">재직 여부</span>
+          <label class="switch">
+            <input type="checkbox" th:field="*{active}">
+            <span class="switch__track"><span class="switch__thumb"></span></span>
+            <span class="switch__label">재직</span>
+          </label>
+        </div>
+
+        <div class="field field--full">
+          <label class="label" for="f-memo">비고</label>
+          <textarea class="textarea" id="f-memo" th:field="*{memo}" placeholder="특이사항이 있으면 입력하세요."></textarea>
+        </div>
+      </div>
+
+      <div class="row row--between mt-6">
+        <a class="btn btn--ghost" th:href="@{/emps}">← 목록으로</a>
+        <div class="row" style="--gap: var(--space-2)">
+          <a class="btn btn--secondary" th:href="@{/emps}">취소</a>
+          <button class="btn btn--primary" type="submit">저장</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer th:replace="~{fragments/menu :: siteFooter}"></footer>
+</body>
+</html>

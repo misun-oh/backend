@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>대시보드 · 사원관리</title>
+  <link rel="stylesheet" th:href="@{/css/basic.css}">
+  <link rel="stylesheet" th:href="@{/css/component.css}">
+  <link rel="stylesheet" th:href="@{/css/app-shell.css}">
+  <link rel="stylesheet" th:href="@{/css/hr.css}">
+  <script th:src="@{/js/component.js}" defer></script>
+</head>
+<body>
+  <header th:replace="~{fragments/menu :: siteHeader('dashboard')}"></header>
+
+  <main class="app-main container container--wide">
+    <div class="page-head">
+      <div>
+        <h1>대시보드</h1>
+        <p th:text="${#temporals.format(#temporals.createNow(), 'yyyy년 M월')} + ' 기준'"></p>
+      </div>
+    </div>
+
+    <!-- 통계 카드 -->
+    <div class="stat-grid">
+      <div class="stat">
+        <p class="stat__label">전체 사원</p>
+        <p class="stat__value" th:text="${stats.totalEmp} + '명'"></p>
+      </div>
+      <div class="stat">
+        <p class="stat__label">재직 중</p>
+        <p class="stat__value" th:text="${stats.activeEmp} + '명'"></p>
+        <p class="stat__delta stat__delta--down" th:text="'▼ 퇴사 ' + ${stats.resignedEmp}"></p>
+      </div>
+      <div class="stat">
+        <p class="stat__label">부서</p>
+        <p class="stat__value" th:text="${stats.deptCount} + '개'"></p>
+        <p class="stat__delta muted" th:text="'운영 ' + ${stats.operatingDeptCount} + ' · 미배정 ' + ${stats.emptyDeptCount}"></p>
+      </div>
+      <div class="stat">
+        <p class="stat__label">평균 월급여</p>
+        <p class="stat__value" th:text="${stats.avgSalary / 10000} + '만원'"></p>
+        <p class="stat__delta muted" th:text="'최고 ' + ${stats.maxSalary / 10000} + '만 · 최저 ' + ${stats.minSalary / 10000} + '만'"></p>
+      </div>
+    </div>
+
+    <div class="grid grid--2 mt-6">
+      <!-- 부서별 인원 -->
+      <div class="card" style="padding: var(--space-6)">
+        <h3 class="mb-4">부서별 인원</h3>
+        <div class="bar-row" th:each="d : ${stats.deptMemberStats}">
+          <span class="bar-row__name" th:text="${d.deptName}">부서명</span>
+          <div class="progress">
+            <div class="progress__bar" th:style="'width: ' + ${d.memberCount * 100 / stats.maxDeptMemberCount} + '%'"></div>
+          </div>
+          <span class="bar-row__count" th:text="${d.memberCount} + '명'"></span>
+        </div>
+      </div>
+
+      <!-- 최근 입사자 -->
+      <div class="card" style="padding: var(--space-6)">
+        <h3 class="mb-4">최근 입사자</h3>
+        <table class="table">
+          <thead><tr><th>이름</th><th>부서</th><th>입사일</th></tr></thead>
+          <tbody>
+            <tr th:each="e : ${stats.recentHires}">
+              <td><a th:href="@{/emps/{id}(id=${e.empId})}" th:text="${e.empName}"></a></td>
+              <td th:text="${e.deptName} ?: '미배정'"></td>
+              <td th:text="${#temporals.format(e.hireDate, 'yyyy-MM-dd')}"></td>
+            </tr>
+          </tbody>
+        </table>
+        <a class="link-arrow mt-4" th:href="@{/emps}" style="display: inline-block">전체 사원 보기</a>
+      </div>
+    </div>
+  </main>
+
+  <footer th:replace="~{fragments/menu :: siteFooter}"></footer>
+</body>
+</html>

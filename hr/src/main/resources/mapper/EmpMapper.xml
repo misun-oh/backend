@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hr.mapper.EmpMapper">
+
+    <resultMap id="empResultMap" type="com.example.hr.domain.Emp">
+        <id property="empId" column="EMP_ID"/>
+        <result property="empName" column="EMP_NAME"/>
+        <result property="email" column="EMAIL"/>
+        <result property="phone" column="PHONE"/>
+        <result property="deptId" column="DEPT_ID"/>
+        <result property="jobCode" column="JOB_CODE"/>
+        <result property="salary" column="SALARY"/>
+        <result property="managerId" column="MANAGER_ID"/>
+        <result property="hireDate" column="HIRE_DATE"/>
+        <result property="active" column="ACTIVE"/>
+        <result property="memo" column="MEMO"/>
+        <result property="deptName" column="DEPT_NAME"/>
+        <result property="jobName" column="JOB_NAME"/>
+        <result property="managerName" column="MANAGER_NAME"/>
+    </resultMap>
+
+    <sql id="empJoinColumns">
+        e.EMP_ID, e.EMP_NAME, e.EMAIL, e.PHONE, e.DEPT_ID, e.JOB_CODE, e.SALARY,
+        e.MANAGER_ID, e.HIRE_DATE, e.ACTIVE, e.MEMO,
+        d.DEPT_NAME, j.JOB_NAME, m.EMP_NAME AS MANAGER_NAME
+    </sql>
+
+    <sql id="empJoinFrom">
+        FROM EMP e
+        LEFT JOIN DEPT d ON e.DEPT_ID = d.DEPT_ID
+        LEFT JOIN JOB j ON e.JOB_CODE = j.JOB_CODE
+        LEFT JOIN EMP m ON e.MANAGER_ID = m.EMP_ID
+    </sql>
+
+    <sql id="empCondWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (e.EMP_NAME LIKE CONCAT('%', #{keyword}, '%')
+                     OR e.EMAIL LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="deptId != null">
+                AND e.DEPT_ID = #{deptId}
+            </if>
+            <if test="workingOnly">
+                AND e.ACTIVE = 1
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectByCond" parameterType="com.example.hr.dto.EmpSearchCond" resultMap="empResultMap">
+        SELECT <include refid="empJoinColumns"/>
+        <include refid="empJoinFrom"/>
+        <include refid="empCondWhere"/>
+        <choose>
+            <when test="sort == 'name'">ORDER BY e.EMP_NAME ASC</when>
+            <when test="sort == 'salary'">ORDER BY e.SALARY DESC</when>
+            <otherwise>ORDER BY e.HIRE_DATE DESC</otherwise>
+        </choose>
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="countByCond" parameterType="com.example.hr.dto.EmpSearchCond" resultType="long">
+        SELECT COUNT(*)
+        FROM EMP e
+        <include refid="empCondWhere"/>
+    </select>
+
+    <select id="selectById" resultMap="empResultMap">
+        SELECT <include refid="empJoinColumns"/>
+        <include refid="empJoinFrom"/>
+        WHERE e.EMP_ID = #{empId}
+    </select>
+
+    <insert id="insert" parameterType="com.example.hr.domain.Emp" useGeneratedKeys="true" keyProperty="empId">
+        INSERT INTO EMP (EMP_NAME, EMAIL, PHONE, DEPT_ID, JOB_CODE, SALARY, MANAGER_ID, HIRE_DATE, ACTIVE, MEMO)
+        VALUES (#{empName}, #{email}, #{phone}, #{deptId}, #{jobCode}, #{salary}, #{managerId}, #{hireDate}, #{active}, #{memo})
+    </insert>
+
+    <!--
+        지금은 전체 컬럼을 항상 SET한다 -> EmpServiceImpl이 EmpForm의 모든 값을 채워서 넘겨야 한다.
+        <set>+<if test="필드 != null">로 바꾸면 값이 있는 컬럼만 부분 수정할 수 있지만,
+        그러면 "null이면 안 건드림"과 "진짜 null로 지움"을 구분할 수 없어진다
+        (예: managerId를 null로 지우는 것도 무시됨). 지금 화면(emp-form)은 항상 전체 값을
+        다시 제출하는 폼이라 이 문제가 없어 전체 SET을 유지한다.
+    -->
+    <update id="update" parameterType="com.example.hr.domain.Emp">
+        UPDATE EMP
+        SET EMP_NAME = #{empName},
+            EMAIL = #{email},
+            PHONE = #{phone},
+            DEPT_ID = #{deptId},
+            JOB_CODE = #{jobCode},
+            SALARY = #{salary},
+            MANAGER_ID = #{managerId},
+            HIRE_DATE = #{hireDate},
+            ACTIVE = #{active},
+            MEMO = #{memo}
+        WHERE EMP_ID = #{empId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM EMP WHERE EMP_ID = #{empId}
+    </delete>
+
+    <select id="countByDeptId" resultType="int">
+        SELECT COUNT(*) FROM EMP WHERE DEPT_ID = #{deptId}
+    </select>
+
+    <select id="selectActiveForDropdown" resultMap="empResultMap">
+        SELECT <include refid="empJoinColumns"/>
+        <include refid="empJoinFrom"/>
+        WHERE e.ACTIVE = 1
+        ORDER BY e.EMP_NAME ASC
+    </select>
+
+    <select id="selectSubordinates" resultMap="empResultMap">
+        SELECT <include refid="empJoinColumns"/>
+        <include refid="empJoinFrom"/>
+        WHERE e.MANAGER_ID = #{managerId}
+        ORDER BY e.EMP_NAME ASC
+    </select>
+
+    <select id="selectRecentHires" resultMap="empResultMap">
+        SELECT <include refid="empJoinColumns"/>
+        <include refid="empJoinFrom"/>
+        ORDER BY e.HIRE_DATE DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM EMP
+    </select>
+
+    <select id="countActive" resultType="long">
+        SELECT COUNT(*) FROM EMP WHERE ACTIVE = 1
+    </select>
+
+    <select id="avgSalary" resultType="long">
+        SELECT COALESCE(ROUND(AVG(SALARY)), 0) FROM EMP WHERE ACTIVE = 1
+    </select>
+
+    <select id="maxSalary" resultType="long">
+        SELECT COALESCE(MAX(SALARY), 0) FROM EMP WHERE ACTIVE = 1
+    </select>
+
+    <select id="minSalary" resultType="long">
+        SELECT COALESCE(MIN(SALARY), 0) FROM EMP WHERE ACTIVE = 1
+    </select>
+
+</mapper>
