@@ -1,19 +1,19 @@
 package com.example.hr.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
- * Day 11 — 검색 조건 DTO. 본문/실습답안 동일.
+ * Day 11 — 검색 조건 + 페이지 요청 정보 DTO.
+ * keyword/deptId/workingOnly 는 1_동적SQL과검색.md, sort/page/size 는 2_페이징.md 에서 추가.
  */
-@Getter
-@Setter
+@Data
 public class EmpSearchCond {
     private String keyword;
     private String deptId;
-    private boolean activeOnly;
+    private boolean workingOnly;
     private EmpSort sort = EmpSort.EMP_ID;
-    private int page = 1;               // 1부터
+
+    private int page = 1;   // 1부터
     private int size = 10;
 
     public int getOffset() {
