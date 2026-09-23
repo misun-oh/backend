@@ -1,29 +1,25 @@
 package com.example.hr.mapper;
 
-import com.example.hr.domain.Emp;
-import com.example.hr.dto.EmpSearchCond;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
+import com.example.hr.dto.EmpDto;
+import com.example.hr.dto.EmpSearchCond;
 
 /**
  * Day 11 — 동적 검색·페이징을 위해 갱신된 EmpMapper.
- * 본문 1절(findList/countList), 5절(findPage/countPage), 3절(findByIds)를 병합.
- * XML: findPage/countPage 는 &lt;sql id="searchWhere"&gt; 를 공유(본문 5절).
+ * selectByCond : 1_동적SQL과검색.md 에서는 LIMIT 없이 전체 결과, 2_페이징.md 에서 LIMIT/OFFSET 추가.
+ * countByCond  : 2_페이징.md 에서 추가 (selectByCond와 같은 &lt;sql id="searchWhere"&gt; 공유).
+ * findByIds    : 1_동적SQL과검색.md 3절, EmpDto.empId 가 int 이므로 List&lt;Integer&gt; 사용.
  */
 @Mapper
 public interface EmpMapper {
 
-    List<Emp> findList(EmpSearchCond cond);
+    List<EmpDto> selectByCond(EmpSearchCond cond);
 
-    long countList(EmpSearchCond cond);
+    int countByCond(EmpSearchCond cond);
 
-    // 페이지 데이터 : ORDER BY e.${sort.column} ${sort.direction} LIMIT #{size} OFFSET #{offset}
-    List<Emp> findPage(EmpSearchCond cond);
-
-    // 페이지네이션용 전체 건수 : findPage와 동일한 WHERE(<sql id="searchWhere">), LIMIT 없음
-    long countPage(EmpSearchCond cond);
-
-    List<Emp> findByIds(@Param("ids") List<Long> ids);
+    List<EmpDto> findByIds(@Param("ids") List<Integer> ids);
 }
