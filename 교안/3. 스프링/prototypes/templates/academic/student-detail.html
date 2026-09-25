@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학사관리 - 학생 상세</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; color: #243047; }
+    h1 { margin-bottom: 8px; }
+    .muted { color: #68758a; }
+    .panel { margin: 24px 0; padding: 20px; border: 1px solid #dbe2ea; border-radius: 6px; }
+    dl { display: grid; grid-template-columns: 140px 1fr; gap: 12px; margin: 0; }
+    dt { color: #68758a; }
+    dd { margin: 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 13px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { background: #edf2f7; }
+    form { display: inline; }
+    button, a { display: inline-block; padding: 9px 12px; border-radius: 4px; text-decoration: none; }
+    a { color: #2457a6; border: 1px solid #cbd5e1; }
+    button { border: 1px solid #2457a6; background: #2457a6; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <p><a href="index.html">학생 목록</a></p>
+  <h1>학생 상세</h1>
+  <p class="muted">학생 기본 정보와 수강 과목</p>
+
+  <section class="panel">
+    <dl>
+      <dt>학번</dt><dd>20240001</dd>
+      <dt>이름</dt><dd>김학생</dd>
+      <dt>학과</dt><dd>컴퓨터공학과</dd>
+      <dt>지도교수</dt><dd>박교수</dd>
+      <dt>이메일</dt><dd>student@example.com</dd>
+      <dt>연락처</dt><dd>010-1234-5678</dd>
+      <dt>입학일</dt><dd>2024-03-01</dd>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>수강 과목</h2>
+    <table>
+      <thead><tr><th>과목 코드</th><th>과목명</th><th>담당 교수</th><th>학점</th><th>성적</th></tr></thead>
+      <tbody>
+        <tr><td>CS101</td><td>Java 프로그래밍</td><td>박교수</td><td>3</td><td>A+</td></tr>
+        <tr><td>DB201</td><td>데이터베이스</td><td>최교수</td><td>3</td><td>B+</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2>수강 신청</h2>
+    <form method="post" action="/students/20240001/enrollments">
+      <select name="courseId">
+        <option value="WEB301">Spring Web 개발</option>
+        <option value="ALGO201">알고리즘</option>
+      </select>
+      <button type="submit">수강 신청</button>
+    </form>
+  </section>
+</body>
+</html>
