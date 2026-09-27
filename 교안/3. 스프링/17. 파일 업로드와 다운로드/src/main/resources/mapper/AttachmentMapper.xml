@@ -8,8 +8,8 @@
 
 CREATE TABLE attachment (
     attachment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    ref_type      VARCHAR(20) NOT NULL,   -- 첨부 대상 종류 (예: 'EMP', 'TEST')
-    ref_id        VARCHAR(20) NOT NULL,   -- 첨부 대상의 기본키 값
+    ref_type      VARCHAR(20) NOT NULL,   (첨부 대상 종류, 예: 'EMP', 'TEST')
+    ref_id        VARCHAR(20) NOT NULL,   (첨부 대상의 기본키 값)
     original_name VARCHAR(255) NOT NULL,
     stored_name   VARCHAR(255) NOT NULL,
     stored_path   VARCHAR(500) NOT NULL,
