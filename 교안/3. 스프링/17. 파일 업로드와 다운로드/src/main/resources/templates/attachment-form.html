@@ -50,11 +50,20 @@
     </form>
 
     <h3 class="mt-6">등록된 첨부파일</h3>
-    <ul class="stack" style="--gap: var(--space-2)" th:if="${not #lists.isEmpty(attachments)}">
-      <li th:each="att : ${attachments}">
-        <a th:href="@{/attachments/{id}(id=${att.attachmentId})}" th:text="${att.originalName}" target="_blank"></a>
-      </li>
-    </ul>
+    <div class="table-wrap" th:if="${not #lists.isEmpty(attachments)}">
+      <table class="table">
+        <thead>
+          <tr><th>파일명</th><th>크기</th><th>업로드 일시</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="att : ${attachments}">
+            <td><a th:href="@{/attachments/{id}(id=${att.attachmentId})}" th:text="${att.originalName}" target="_blank"></a></td>
+            <td th:text="${att.fileSize}"></td>
+            <td th:text="${att.uploadedAt}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <p class="muted" th:if="${#lists.isEmpty(attachments)}">등록된 첨부파일이 없습니다.</p>
   </main>
 
