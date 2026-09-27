@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hr.mapper.AttachmentMapper">
+
+<!--
+테이블 생성 쿼리 (ref_type/ref_id로 어떤 엔티티든 첨부파일을 붙일 수 있는 공통 구조)
+
+CREATE TABLE attachment (
+    attachment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ref_type      VARCHAR(20) NOT NULL,   -- 첨부 대상 종류 (예: 'EMP', 'TEST')
+    ref_id        VARCHAR(20) NOT NULL,   -- 첨부 대상의 기본키 값
+    original_name VARCHAR(255) NOT NULL,
+    stored_name   VARCHAR(255) NOT NULL,
+    stored_path   VARCHAR(500) NOT NULL,
+    content_type  VARCHAR(100) NOT NULL,
+    file_size     BIGINT NOT NULL,
+    uploaded_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_attachment_ref (ref_type, ref_id)
+);
+-->
+
+	<insert id="insert" parameterType="AttachmentDto"
+			useGeneratedKeys="true" keyProperty="attachmentId" keyColumn="attachment_id">
+		INSERT INTO attachment (ref_type, ref_id, original_name, stored_name, stored_path, content_type, file_size)
+		VALUES (#{refType}, #{refId}, #{originalName}, #{storedName}, #{storedPath}, #{contentType}, #{fileSize})
+	</insert>
+
+	<select id="selectByRef" resultType="AttachmentDto">
+		SELECT attachment_id, ref_type, ref_id, original_name, stored_name, stored_path, content_type, file_size, uploaded_at
+		FROM attachment
+		WHERE ref_type = #{refType} AND ref_id = #{refId}
+		ORDER BY attachment_id
+	</select>
+
+</mapper>
